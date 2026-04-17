@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #ffffff;
+  --color-secondary: #c4bfb9;
+  --color-accent: #d4a96a;
+  --color-surface: #161616;
+  --color-surface-light: #222222;
+  --color-success: #5ee98d;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-bg: #0c0c0c;
+  --color-text: #fbf8f4;
+  --color-muted: #e8e8e8;
+  --color-card: #161616;
+  --color-border: #383838;
+
+  --font-display: "Playfair Display", serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+
+/* Selection */
+::selection {
+  background: rgba(201, 168, 124, 0.25);
+  color: #fff;
+}
+
+/* Base body */
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Subtle grid overlay ─── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* ─── Section Label ─── */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* ─── Glass card ─── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ─── Skill tag ─── */
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--color-secondary);
+  font-family: var(--font-mono);
+  transition: all 0.2s ease;
+}
+.skill-tag:hover {
+  color: var(--color-text);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ─── Arrow link ─── */
+.arrow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  transition: gap 0.3s ease, color 0.2s ease;
+}
+.arrow-link:hover {
+  gap: 0.8rem;
+  color: #fff;
+}
+
+/* ─── Editorial HR ─── */
+.editorial-hr {
+  border: none;
+  height: 1px;
+  background: var(--color-border);
+  margin: 0;
+}
+
+/* ─── Page enter ─── */
+.page-enter {
+  animation: pageEnter 0.8s ease forwards;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
