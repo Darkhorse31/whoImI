@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FilmGrainWrapper from "@/components/FilmGrainWrapper";
 import InteractiveModelWrapper from "@/components/InteractiveModelWrapper";
+import WaveGlobeWrapper from "@/components/WaveGlobeWrapper";
 
 export const metadata: Metadata = {
   title: "Prateek Kumar — Full Stack Developer",
@@ -40,6 +41,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-bg text-text font-body">
+        <WaveGlobeWrapper />
         <FilmGrainWrapper />
         <InteractiveModelWrapper />
         <Navbar />

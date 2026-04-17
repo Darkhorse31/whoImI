@@ -102,14 +102,14 @@ function Particles({ active, hovering, navigating }: { active: boolean; hovering
     meshRef.current.instanceMatrix.needsUpdate = true;
   });
 
-  // Color each particle instance with red shade variation
+  // Solar particle colors — golden/amber tones
   const redShades = useMemo(() => [
-    new THREE.Color("#fafafa"),
-    new THREE.Color("#e0e0e0"),
-    new THREE.Color("#ffffff"),
-    new THREE.Color("#c8c8c8"),
-    new THREE.Color("#f0f0f0"),
-    new THREE.Color("#d5d5d5"),
+    new THREE.Color("#FFD700"),
+    new THREE.Color("#FFA500"),
+    new THREE.Color("#FF8C00"),
+    new THREE.Color("#FFE4B5"),
+    new THREE.Color("#FFCC33"),
+    new THREE.Color("#FF9933"),
   ], []);
 
   // Set per-instance colors
@@ -144,6 +144,20 @@ function GeometricShape() {
   const currentPage = useRef(0);
   const pathname = usePathname();
   const { viewport } = useThree();
+
+  // Sun material refs (updated per-frame based on time)
+  const coreMat = useRef<THREE.MeshBasicMaterial>(null!);
+  const surfaceMat = useRef<THREE.MeshBasicMaterial>(null!);
+  const innerCoreMat = useRef<THREE.MeshBasicMaterial>(null!);
+  const corona1Mat = useRef<THREE.MeshBasicMaterial>(null!);
+  const corona2Mat = useRef<THREE.MeshBasicMaterial>(null!);
+  const atmosphereMat = useRef<THREE.MeshBasicMaterial>(null!);
+
+  // Pre-allocated colors to avoid GC in render loop
+  const sunCoreColor = useRef(new THREE.Color('#FFD700'));
+  const sunCoronaColor = useRef(new THREE.Color('#FFA500'));
+  const _c1 = useRef(new THREE.Color());
+  const _c2 = useRef(new THREE.Color());
 
   // Particle state
   const [particlesActive, setParticlesActive] = useState(false);
@@ -240,12 +254,25 @@ function GeometricShape() {
     groupRef.current.rotation.x += (targetRotation.current.x - groupRef.current.rotation.x) * 0.03;
     groupRef.current.rotation.y += (targetRotation.current.y - groupRef.current.rotation.y) * 0.03;
 
-    // ─── Smooth scroll-based position ───
-    // Vertical: float based on scroll + sine wave
-    // Horizontal: slight drift per page
-    const scrollDriftY = -scrollFactor * 0.6 + Math.sin(time * 0.4) * 0.2;
-    const scrollDriftX = Math.sin(scrollFactor * 0.5 + pageOffset) * 0.3;
-    const targetPos = new THREE.Vector3(scrollDriftX, scrollDriftY, 0);
+    // ─── Sun position from local time ───
+    const now = new Date();
+    const hours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+    const sunriseHour = 5.5, sunsetHour = 18.5;
+    const isDaytime = hours >= sunriseHour && hours <= sunsetHour;
+    const dayProgress = isDaytime ? (hours - sunriseHour) / (sunsetHour - sunriseHour) : 0;
+    const elevation = isDaytime ? 4 * dayProgress * (1 - dayProgress) : 0;
+    const horizontal = isDaytime ? dayProgress * 2 - 1 : (hours < sunriseHour ? -1.3 : 1.3);
+
+    // Sun arc mapped to viewport coordinates
+    const sunX = horizontal * viewport.width * 0.35;
+    const sunY = isDaytime
+      ? elevation * viewport.height * 0.35 - viewport.height * 0.05
+      : -viewport.height * 0.45;
+
+    // Scroll drift layered on sun position
+    const scrollDriftY = -scrollFactor * 0.4 + Math.sin(time * 0.4) * 0.15;
+    const scrollDriftX = Math.sin(scrollFactor * 0.5 + pageOffset) * 0.2;
+    const targetPos = new THREE.Vector3(sunX + scrollDriftX, sunY + scrollDriftY, 0);
 
     // Damped lerp for silky smooth movement
     smoothPos.current.lerp(targetPos, 0.025);
@@ -270,14 +297,57 @@ function GeometricShape() {
     springVelocity.current += (springForce + dampForce) * (1 / 60);
     springScale.current += springVelocity.current * (1 / 60);
 
-    // Apply spring scale to the whole group
-    const s = springScale.current;
+    // Sun size: larger near horizon (atmospheric magnification)
+    const sunSizeScale = isDaytime ? 1 + (1 - elevation) * 0.25 : 0.75;
+    const s = springScale.current * sunSizeScale;
     groupRef.current.scale.set(s, s, s);
 
     // Inner mesh counter-rotates slowly
     if (innerRef.current) {
       innerRef.current.rotation.x = -time * 0.15;
       innerRef.current.rotation.z = time * 0.1;
+    }
+
+    // ─── Update sun colors based on time of day ───
+    const glowIntensity = isDaytime ? 0.3 + elevation * 0.7 : 0.15;
+    const coreOpacity = isDaytime ? 0.5 + elevation * 0.5 : 0.2;
+
+    if (isDaytime) {
+      sunCoreColor.current.lerpColors(
+        _c1.current.set('#FF6B35'), _c2.current.set('#FFFAF0'), elevation
+      );
+      sunCoronaColor.current.lerpColors(
+        _c1.current.set('#FF4500'), _c2.current.set('#FFD700'), elevation
+      );
+    } else {
+      sunCoreColor.current.set('#A0AEC0');
+      sunCoronaColor.current.set('#718096');
+    }
+
+    // Apply colors to all sun layers
+    if (coreMat.current) {
+      coreMat.current.color.copy(sunCoreColor.current);
+      coreMat.current.opacity = coreOpacity;
+    }
+    if (surfaceMat.current) {
+      surfaceMat.current.color.copy(sunCoreColor.current);
+      surfaceMat.current.opacity = glowIntensity * 0.18;
+    }
+    if (innerCoreMat.current) {
+      innerCoreMat.current.color.copy(sunCoronaColor.current);
+      innerCoreMat.current.opacity = glowIntensity * 0.12;
+    }
+    if (corona1Mat.current) {
+      corona1Mat.current.color.copy(sunCoronaColor.current);
+      corona1Mat.current.opacity = glowIntensity * 0.07;
+    }
+    if (corona2Mat.current) {
+      corona2Mat.current.color.copy(sunCoronaColor.current);
+      corona2Mat.current.opacity = glowIntensity * 0.04;
+    }
+    if (atmosphereMat.current) {
+      atmosphereMat.current.color.copy(sunCoronaColor.current);
+      atmosphereMat.current.opacity = glowIntensity * 0.025;
     }
   });
 
@@ -291,38 +361,81 @@ function GeometricShape() {
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeaveHandler}
     >
-      {/* Outer wireframe icosahedron */}
+      {/* Sun core — bright center */}
+      <mesh>
+        <sphereGeometry args={[size * 0.25, 32, 32]} />
+        <meshBasicMaterial
+          ref={coreMat}
+          color="#FFD700"
+          transparent
+          opacity={0.8}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Sun surface — faceted texture */}
       <mesh ref={wireRef}>
-        <icosahedronGeometry args={[size, 1]} />
+        <icosahedronGeometry args={[size * 0.5, 3]} />
         <meshBasicMaterial
-          color="#fafafa"
-          wireframe
+          ref={surfaceMat}
+          color="#FFD700"
           transparent
-          opacity={0.2}
+          opacity={0.15}
+          side={THREE.DoubleSide}
+          depthWrite={false}
         />
       </mesh>
 
-      {/* Inner solid shape */}
+      {/* Inner rotating structure */}
       <mesh ref={innerRef}>
-        <octahedronGeometry args={[size * 0.35, 0]} />
+        <octahedronGeometry args={[size * 0.35, 1]} />
         <meshBasicMaterial
-          color="#fafafa"
-          wireframe
+          ref={innerCoreMat}
+          color="#FFA500"
           transparent
-          opacity={0.35}
+          opacity={0.1}
+          side={THREE.DoubleSide}
+          depthWrite={false}
         />
       </mesh>
 
-      {/* Center glow point */}
+      {/* Inner corona */}
       <mesh>
-        <sphereGeometry args={[size * 0.06, 16, 16]} />
-        <meshBasicMaterial color="#fafafa" transparent opacity={0.7} />
+        <sphereGeometry args={[size * 0.65, 32, 32]} />
+        <meshBasicMaterial
+          ref={corona1Mat}
+          color="#FFA500"
+          transparent
+          opacity={0.06}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
       </mesh>
 
-      {/* Outer glow halo */}
+      {/* Outer corona */}
       <mesh>
-        <sphereGeometry args={[size * 0.12, 16, 16]} />
-        <meshBasicMaterial color="#fafafa" transparent opacity={0.08} />
+        <sphereGeometry args={[size * 0.9, 32, 32]} />
+        <meshBasicMaterial
+          ref={corona2Mat}
+          color="#FF8C00"
+          transparent
+          opacity={0.04}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Atmosphere haze */}
+      <mesh>
+        <sphereGeometry args={[size * 1.2, 32, 32]} />
+        <meshBasicMaterial
+          ref={atmosphereMat}
+          color="#FF8C00"
+          transparent
+          opacity={0.025}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
       </mesh>
 
       {/* Particles */}
@@ -331,11 +444,10 @@ function GeometricShape() {
   );
 }
 
-/* ─── Canvas wrapper ─── */
 export default function InteractiveModel() {
   return (
     <div
-      className="fixed top-0 right-0 w-[40vw] h-screen z-10 pointer-events-none"
+      className="fixed inset-0 w-screen h-screen z-10 pointer-events-none"
       style={{ mixBlendMode: "screen" }}
     >
       <Canvas
