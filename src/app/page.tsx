@@ -101,11 +101,16 @@ export default function HomePage() {
             <span className="italic text-muted">Something Together</span>
           </h2>
           <p className="text-muted text-base max-w-lg mx-auto mb-10">
-            Open to new opportunities. Let&apos;s discuss how I can contribute to your team.
+            Open to new opportunities and freelance projects. Let&apos;s discuss how I can contribute to your team.
           </p>
-          <Link href="/contact" className="arrow-link justify-center">
-            Get in Touch <ArrowRight size={14} />
-          </Link>
+          <div className="flex items-center justify-center gap-6 flex-wrap">
+            <Link href="/contact?hire=true" className="inline-flex items-center gap-3 px-8 py-4 bg-accent text-bg font-mono text-xs tracking-[0.12em] uppercase hover:bg-accent/90 transition-colors">
+              Hire Me <ArrowRight size={14} />
+            </Link>
+            <Link href="/contact" className="arrow-link">
+              Get in Touch <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </section>
     </div>

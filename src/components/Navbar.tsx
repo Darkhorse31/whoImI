@@ -73,12 +73,15 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Status */}
+          {/* Hire Me CTA */}
           <div className="hidden md:flex items-center">
-            <span className="inline-flex items-center gap-2 text-xs font-mono text-muted">
+            <Link
+              href="/contact?hire=true"
+              className="inline-flex items-center gap-2 text-xs font-mono tracking-[0.12em] uppercase px-4 py-2 border border-accent text-accent hover:bg-accent hover:text-bg transition-all duration-200"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              Available
-            </span>
+              Hire Me
+            </Link>
           </div>
 
           {/* Mobile toggle */}

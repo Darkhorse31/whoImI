@@ -45,7 +45,7 @@ export default function RootLayout({
         <FilmGrainWrapper />
         <InteractiveModelWrapper />
         <Navbar />
-        <main>{children}</main>
+        <main className="relative z-20">{children}</main>
         <Footer />
       </body>
     </html>
