@@ -157,7 +157,7 @@ export default function WaveGlobe() {
     <canvas
       ref={canvasRef}
       onClick={handleClick}
-      className="fixed bottom-0 left-0 w-full pointer-events-auto"
+      className="fixed bottom-0 left-0 w-full pointer-events-none"
       style={{ zIndex: 1, height: "65vh" }}
     />
   );

@@ -81,7 +81,7 @@ export default function ContactPage() {
                       <span className="font-mono text-xs tracking-wider uppercase">GitHub</span>
                     </a>
                     <a
-                      href={personalData.linkedin}
+                      href={'https://www.linkedin.com/in/prateek-kumar-484461204'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-muted hover:text-text transition-colors text-sm"

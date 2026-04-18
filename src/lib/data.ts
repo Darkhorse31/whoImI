@@ -5,10 +5,10 @@ export const personalData = {
   experience: "4 Years",
   tagline: "Building things that scale",
   location: "Lucknow, India",
-  phone: "+91-9305766334",
+  phone: "",
   email: "prateek.devfullstack@gmail.com",
-  linkedin: "https://linkedin.com/in/prateek-kumar",
-  github: "https://github.com/prateek-kumar",
+  linkedin: "linkedin.com/in/prateek-kumar-484461204",
+  github: "https://github.com/Darkhorse31",
   openToOpportunities: true,
   profile:
     "Full-stack SDE-2 with 4 years across chat, social media, marketplace, fintech, and media platforms. I build with Angular, React, Node.js, Redis, GCP, and Elasticsearch — on the parts that connect UI to infrastructure. Shipped real-time messaging at 8–10K concurrent connections, built social data pipelines, slashed API P95 latency from 520ms → 320ms, and mentored 8 engineers.",

@@ -375,7 +375,7 @@ function GeometricShape() {
 
       {/* Sun surface — faceted texture */}
       <mesh ref={wireRef}>
-        <icosahedronGeometry args={[size * 0.5, 3]} />
+        <icosahedronGeometry args={[size * 0.5, 8]} />
         <meshBasicMaterial
           ref={surfaceMat}
           color="#FFD700"
@@ -388,7 +388,7 @@ function GeometricShape() {
 
       {/* Inner rotating structure */}
       <mesh ref={innerRef}>
-        <octahedronGeometry args={[size * 0.35, 1]} />
+        <sphereGeometry args={[size * 0.35, 32, 32]} />
         <meshBasicMaterial
           ref={innerCoreMat}
           color="#FFA500"

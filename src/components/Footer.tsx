@@ -4,7 +4,7 @@ import { GithubIcon, LinkedinIcon } from "@/components/SocialIcons";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border">
+    <footer className="relative z-20 border-t border-border">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-20">
         {/* Top section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-16">
@@ -64,7 +64,7 @@ export default function Footer() {
                   <GithubIcon size={16} />
                 </a>
                 <a
-                  href={personalData.linkedin}
+                  href={'https://www.linkedin.com/in/prateek-kumar-484461204'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted hover:text-text transition-colors"
@@ -83,9 +83,7 @@ export default function Footer() {
           <p className="text-xs text-muted font-mono">
             © {new Date().getFullYear()} Prateek Kumar
           </p>
-          <p className="text-xs text-muted font-mono">
-            Built with Next.js & Framer Motion
-          </p>
+          
         </div>
       </div>
     </footer>
