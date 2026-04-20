@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import SectionHeading from "@/components/SectionHeading";
+import TechIcon from "@/components/TechIcon";
 import { personalData, skills } from "@/lib/data";
 
 const skillGroups = [
@@ -146,7 +147,10 @@ export default function AboutPage() {
                 <h3 className="section-label mb-4">{group.title}</h3>
                 <div className="flex flex-wrap gap-2">
                   {group.items.map((item) => (
-                    <span key={item} className="skill-tag">{item}</span>
+                    <span key={item} className="skill-tag">
+                      <TechIcon name={item} />
+                      {item}
+                    </span>
                   ))}
                 </div>
               </motion.div>

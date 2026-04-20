@@ -37,7 +37,6 @@ function drawCloud(
   const { x, y, w, h } = cloud;
 
   // Bottom depth shadow
-  ctx.filter = 'blur(12px)';
   ctx.globalAlpha = cloud.opacity * 0.28;
   const shadowGrad = ctx.createRadialGradient(x, y + h * 0.55, 0, x, y + h * 0.55, w * 0.45);
   shadowGrad.addColorStop(0, 'rgba(155, 170, 200, 0.9)');
@@ -49,7 +48,6 @@ function drawCloud(
   ctx.fill();
 
   // Fluffy blobs with radial gradients
-  ctx.filter = 'blur(5px)';
   ctx.globalAlpha = cloud.opacity;
 
   const blobs = [
@@ -79,7 +77,6 @@ function drawCloud(
   }
 
   // Crisp bright highlight on the lit top
-  ctx.filter = 'none';
   ctx.globalAlpha = cloud.opacity * 0.55;
   const hlGrad = ctx.createRadialGradient(x, y - h * 0.20, 0, x, y, w * 0.38);
   hlGrad.addColorStop(0,    'rgba(255, 255, 255, 0.95)');
@@ -90,7 +87,6 @@ function drawCloud(
   ctx.fillStyle = hlGrad;
   ctx.fill();
 
-  ctx.filter = 'none';
   ctx.restore();
 }
 

@@ -44,7 +44,7 @@ body {
   font-weight: 300;
   font-size: 16px;
   line-height: 1.7;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -132,14 +132,23 @@ body::before {
 .skill-tag {
   display: inline-flex;
   align-items: center;
-  padding: 4px 14px;
+  gap: 0.35rem;
+  padding: 4px 12px;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   color: var(--color-secondary);
   font-family: var(--font-mono);
+  line-height: 1;
   transition: all 0.2s ease;
+}
+.skill-tag svg {
+  flex-shrink: 0;
+  width: 0.85em;
+  height: 0.85em;
+  opacity: 0.75;
+  vertical-align: middle;
 }
 .skill-tag:hover {
   color: var(--color-text);
@@ -235,7 +244,32 @@ body::before {
 
 /* Day-mode component adjustments for readability */
 [data-mode="day"] .section-label {
-  color: var(--color-muted);
+  color: #484b6a;
+  font-weight: 600;
+}
+
+/* All text inside glass-card is dark in day mode */
+[data-mode="day"] .glass-card {
+  color: #1a1c2e;
+}
+[data-mode="day"] .glass-card .section-label {
+  color: #484b6a;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+/* Day mode: project titles, descriptions, stats */
+[data-mode="day"] .text-text {
+  color: #1a1c2e !important;
+}
+[data-mode="day"] .text-muted {
+  color: #484b6a !important;
+}
+[data-mode="day"] .text-muted\/20 {
+  color: rgba(72,75,106,0.20) !important;
+}
+[data-mode="day"] .text-border {
+  color: #9394a5 !important;
 }
 
 /* Override hardcoded text-white hover states to stay readable in day mode */
@@ -245,13 +279,14 @@ body::before {
 }
 
 [data-mode="day"] .skill-tag {
-  color: var(--color-secondary);
-  border-color: var(--color-border);
+  color: #1a1c2e;
+  border-color: #9394a5;
+  background: rgba(72,75,106,0.08);
 }
 [data-mode="day"] .skill-tag:hover {
-  color: var(--color-text);
-  border-color: #9394a5;
-  background: rgba(72,75,106,0.06);
+  color: #1a1c2e;
+  border-color: #484b6a;
+  background: rgba(72,75,106,0.16);
 }
 
 [data-mode="day"] .arrow-link {

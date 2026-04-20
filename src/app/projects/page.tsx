@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import SectionHeading from "@/components/SectionHeading";
+import TechIcon from "@/components/TechIcon";
 import { projects } from "@/lib/data";
 
 const fadeUp = {
@@ -53,7 +54,10 @@ export default function ProjectsPage() {
                       {/* Tech stack */}
                       <div className="flex flex-wrap gap-2 mt-6">
                         {project.tech.map((t) => (
-                          <span key={t} className="skill-tag">{t}</span>
+                          <span key={t} className="skill-tag">
+                            <TechIcon name={t} />
+                            {t}
+                          </span>
                         ))}
                       </div>
                     </div>

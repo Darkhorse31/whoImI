@@ -40,9 +40,6 @@ export default function HomePage() {
           {/* Scroll line */}
           <div className="absolute bottom-8 left-6 lg:left-12 flex items-center gap-4">
             <div className="w-px h-16 bg-white/40" />
-            <span className="text-[10px] font-mono tracking-[0.3em] uppercase hero-label">
-              Scroll
-            </span>
           </div>
         </div>
       </section>

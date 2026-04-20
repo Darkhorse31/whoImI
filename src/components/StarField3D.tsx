@@ -5,8 +5,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 /* ─────────────────────── Constants ─────────────────────── */
-const STAR_COUNT = 1800;
-const SHOOTING_INTERVAL = 4000; // ms between shooting stars
+const STAR_COUNT = 3000;
+const SHOOTING_INTERVAL = 2000; // ms between shooting stars
 
 /* ─────────────────────── Star data ─────────────────────── */
 function generateStarData(count: number) {
