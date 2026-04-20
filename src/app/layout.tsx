@@ -7,6 +7,7 @@ import InteractiveModelWrapper from "@/components/InteractiveModelWrapper";
 import WaveGlobeWrapper from "@/components/WaveGlobeWrapper";
 import { DayNightProvider } from "@/context/DayNightContext";
 import DayNightEnvironment from "@/components/DayNightEnvironment";
+import SmoothScroll from "@/components/SmoothScroll";
 
 export const metadata: Metadata = {
   title: "Prateek Kumar — Full Stack Developer",
@@ -44,13 +45,15 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-bg text-text font-body">
         <DayNightProvider>
-          <DayNightEnvironment />
-          <WaveGlobeWrapper />
-          <FilmGrainWrapper />
-          <InteractiveModelWrapper />
-          <Navbar />
-          <main className="relative z-20">{children}</main>
-          <Footer />
+          <SmoothScroll>
+            <DayNightEnvironment />
+            <WaveGlobeWrapper />
+            <FilmGrainWrapper />
+            <InteractiveModelWrapper />
+            <Navbar />
+            <main className="relative z-20">{children}</main>
+            <Footer />
+          </SmoothScroll>
         </DayNightProvider>
       </body>
     </html>

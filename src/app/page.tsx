@@ -10,18 +10,18 @@ export default function HomePage() {
         <div className="relative z-20 max-w-7xl mx-auto px-6 lg:px-12 w-full">
           {/* Overline */}
           <div className="mb-8">
-            <span className="section-label">Full Stack Developer</span>
+            <span className="hero-label font-mono">Full Stack Developer</span>
           </div>
 
           {/* Name */}
-          <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[9rem] font-medium leading-[0.9] tracking-tight text-text mb-8">
-            <span className="block">Prateek</span>
-            <span className="block italic text-muted">Kumar</span>
+          <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-[9rem] font-medium leading-[0.9] tracking-tight mb-8">
+            <span className="block hero-title">Prateek</span>
+            <span className="block italic hero-title-muted">Kumar</span>
           </h1>
 
           {/* Tagline */}
           <div className="max-w-xl mb-12">
-            <p className="text-base text-muted leading-relaxed">
+            <p className="text-base hero-tagline leading-relaxed">
               {personalData.tagline}. SDE-2 with {personalData.experience} building
               scalable real-time systems, APIs, and cloud infrastructure.
             </p>
@@ -29,18 +29,18 @@ export default function HomePage() {
 
           {/* CTAs */}
           <div className="flex items-center gap-8">
-            <Link href="/projects" className="arrow-link">
+            <Link href="/projects" className="arrow-link hero-title">
               View Works <ArrowRight size={14} />
             </Link>
-            <Link href="/contact" className="arrow-link text-muted">
+            <Link href="/contact" className="arrow-link hero-title-muted">
               Get in Touch <ArrowRight size={14} />
             </Link>
           </div>
 
           {/* Scroll line */}
           <div className="absolute bottom-8 left-6 lg:left-12 flex items-center gap-4">
-            <div className="w-px h-16 bg-border" />
-            <span className="text-[10px] font-mono tracking-[0.3em] uppercase text-muted rotate-0">
+            <div className="w-px h-16 bg-white/40" />
+            <span className="text-[10px] font-mono tracking-[0.3em] uppercase hero-label">
               Scroll
             </span>
           </div>
