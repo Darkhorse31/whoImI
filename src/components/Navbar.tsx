@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import DayNightToggle from "@/components/DayNightToggle";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -73,8 +74,9 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Hire Me CTA */}
-          <div className="hidden md:flex items-center">
+          {/* Hire Me CTA + Day/Night Toggle */}
+          <div className="hidden md:flex items-center gap-4">
+            <DayNightToggle />
             <Link
               href="/contact?hire=true"
               className="inline-flex items-center gap-2 text-xs font-mono tracking-[0.12em] uppercase px-4 py-2 border border-accent text-accent hover:bg-accent hover:text-bg transition-all duration-200"
@@ -85,13 +87,16 @@ export default function Navbar() {
           </div>
 
           {/* Mobile toggle */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-muted hover:text-text"
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-          >
-            {isOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          <div className="md:hidden flex items-center gap-3">
+            <DayNightToggle />
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 text-muted hover:text-text"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+            >
+              {isOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import FilmGrainWrapper from "@/components/FilmGrainWrapper";
 import InteractiveModelWrapper from "@/components/InteractiveModelWrapper";
 import WaveGlobeWrapper from "@/components/WaveGlobeWrapper";
+import { DayNightProvider } from "@/context/DayNightContext";
+import DayNightEnvironment from "@/components/DayNightEnvironment";
 
 export const metadata: Metadata = {
   title: "Prateek Kumar — Full Stack Developer",
@@ -41,12 +43,15 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-bg text-text font-body">
-        <WaveGlobeWrapper />
-        <FilmGrainWrapper />
-        <InteractiveModelWrapper />
-        <Navbar />
-        <main className="relative z-20">{children}</main>
-        <Footer />
+        <DayNightProvider>
+          <DayNightEnvironment />
+          <WaveGlobeWrapper />
+          <FilmGrainWrapper />
+          <InteractiveModelWrapper />
+          <Navbar />
+          <main className="relative z-20">{children}</main>
+          <Footer />
+        </DayNightProvider>
       </body>
     </html>
   );

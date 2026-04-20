@@ -102,27 +102,27 @@ function Particles({ active, hovering, navigating }: { active: boolean; hovering
     meshRef.current.instanceMatrix.needsUpdate = true;
   });
 
-  // Solar particle colors — golden/amber tones
-  const redShades = useMemo(() => [
-    new THREE.Color("#FFD700"),
-    new THREE.Color("#FFA500"),
-    new THREE.Color("#FF8C00"),
-    new THREE.Color("#FFE4B5"),
-    new THREE.Color("#FFCC33"),
-    new THREE.Color("#FF9933"),
+  // Moon particle colors — cool silver/blue tones
+  const moonShades = useMemo(() => [
+    new THREE.Color("#e8ecf8"),
+    new THREE.Color("#c0cce0"),
+    new THREE.Color("#a8b8d0"),
+    new THREE.Color("#dce4f2"),
+    new THREE.Color("#b8c8e0"),
+    new THREE.Color("#f0f4fc"),
   ], []);
 
   // Set per-instance colors
   const colorArray = useMemo(() => {
     const arr = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      const c = redShades[i % redShades.length];
+      const c = moonShades[i % moonShades.length];
       arr[i * 3] = c.r;
       arr[i * 3 + 1] = c.g;
       arr[i * 3 + 2] = c.b;
     }
     return arr;
-  }, [count, redShades]);
+  }, [count, moonShades]);
 
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
@@ -254,25 +254,14 @@ function GeometricShape() {
     groupRef.current.rotation.x += (targetRotation.current.x - groupRef.current.rotation.x) * 0.03;
     groupRef.current.rotation.y += (targetRotation.current.y - groupRef.current.rotation.y) * 0.03;
 
-    // ─── Sun position from local time ───
-    const now = new Date();
-    const hours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-    const sunriseHour = 5.5, sunsetHour = 18.5;
-    const isDaytime = hours >= sunriseHour && hours <= sunsetHour;
-    const dayProgress = isDaytime ? (hours - sunriseHour) / (sunsetHour - sunriseHour) : 0;
-    const elevation = isDaytime ? 4 * dayProgress * (1 - dayProgress) : 0;
-    const horizontal = isDaytime ? dayProgress * 2 - 1 : (hours < sunriseHour ? -1.3 : 1.3);
+    // ─── Moon position — upper area, gently drifting ───
+    const moonX = viewport.width * 0.3 + Math.sin(time * 0.12) * 0.08;
+    const moonY = viewport.height * 0.28 + Math.sin(time * 0.25) * 0.12;
 
-    // Sun arc mapped to viewport coordinates
-    const sunX = horizontal * viewport.width * 0.35;
-    const sunY = isDaytime
-      ? elevation * viewport.height * 0.35 - viewport.height * 0.05
-      : -viewport.height * 0.45;
-
-    // Scroll drift layered on sun position
-    const scrollDriftY = -scrollFactor * 0.4 + Math.sin(time * 0.4) * 0.15;
-    const scrollDriftX = Math.sin(scrollFactor * 0.5 + pageOffset) * 0.2;
-    const targetPos = new THREE.Vector3(sunX + scrollDriftX, sunY + scrollDriftY, 0);
+    // Scroll drift layered on moon position
+    const scrollDriftY = -scrollFactor * 0.3 + Math.sin(time * 0.4) * 0.10;
+    const scrollDriftX = Math.sin(scrollFactor * 0.3 + pageOffset) * 0.12;
+    const targetPos = new THREE.Vector3(moonX + scrollDriftX, moonY + scrollDriftY, 0);
 
     // Damped lerp for silky smooth movement
     smoothPos.current.lerp(targetPos, 0.025);
@@ -297,57 +286,48 @@ function GeometricShape() {
     springVelocity.current += (springForce + dampForce) * (1 / 60);
     springScale.current += springVelocity.current * (1 / 60);
 
-    // Sun size: larger near horizon (atmospheric magnification)
-    const sunSizeScale = isDaytime ? 1 + (1 - elevation) * 0.25 : 0.75;
-    const s = springScale.current * sunSizeScale;
+    // Moon scale — gentle pulse
+    const moonPulse = 1 + Math.sin(time * 0.8) * 0.02;
+    const s = springScale.current * moonPulse * 0.8;
     groupRef.current.scale.set(s, s, s);
 
-    // Inner mesh counter-rotates slowly
+    // Inner mesh counter-rotates very slowly (crater-like texture feel)
     if (innerRef.current) {
-      innerRef.current.rotation.x = -time * 0.15;
-      innerRef.current.rotation.z = time * 0.1;
+      innerRef.current.rotation.x = -time * 0.04;
+      innerRef.current.rotation.z = time * 0.03;
     }
 
-    // ─── Update sun colors based on time of day ───
-    const glowIntensity = isDaytime ? 0.3 + elevation * 0.7 : 0.15;
-    const coreOpacity = isDaytime ? 0.5 + elevation * 0.5 : 0.2;
+    // ─── Moon colors — cool silver/white ───
+    const glowIntensity = 0.55 + Math.sin(time * 0.6) * 0.04;
+    const coreOpacity = 0.88;
 
-    if (isDaytime) {
-      sunCoreColor.current.lerpColors(
-        _c1.current.set('#FF6B35'), _c2.current.set('#FFFAF0'), elevation
-      );
-      sunCoronaColor.current.lerpColors(
-        _c1.current.set('#FF4500'), _c2.current.set('#FFD700'), elevation
-      );
-    } else {
-      sunCoreColor.current.set('#A0AEC0');
-      sunCoronaColor.current.set('#718096');
-    }
+    sunCoreColor.current.set('#f2f0ec');
+    sunCoronaColor.current.set('#8fa4bc');
 
-    // Apply colors to all sun layers
+    // Apply moon colors
     if (coreMat.current) {
       coreMat.current.color.copy(sunCoreColor.current);
       coreMat.current.opacity = coreOpacity;
     }
     if (surfaceMat.current) {
       surfaceMat.current.color.copy(sunCoreColor.current);
-      surfaceMat.current.opacity = glowIntensity * 0.18;
+      surfaceMat.current.opacity = glowIntensity * 0.12;
     }
     if (innerCoreMat.current) {
       innerCoreMat.current.color.copy(sunCoronaColor.current);
-      innerCoreMat.current.opacity = glowIntensity * 0.12;
+      innerCoreMat.current.opacity = glowIntensity * 0.09;
     }
     if (corona1Mat.current) {
       corona1Mat.current.color.copy(sunCoronaColor.current);
-      corona1Mat.current.opacity = glowIntensity * 0.07;
+      corona1Mat.current.opacity = glowIntensity * 0.055;
     }
     if (corona2Mat.current) {
       corona2Mat.current.color.copy(sunCoronaColor.current);
-      corona2Mat.current.opacity = glowIntensity * 0.04;
+      corona2Mat.current.opacity = glowIntensity * 0.032;
     }
     if (atmosphereMat.current) {
       atmosphereMat.current.color.copy(sunCoronaColor.current);
-      atmosphereMat.current.opacity = glowIntensity * 0.025;
+      atmosphereMat.current.opacity = glowIntensity * 0.018;
     }
   });
 
@@ -361,26 +341,26 @@ function GeometricShape() {
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeaveHandler}
     >
-      {/* Sun core — bright center */}
+      {/* Moon core — silver-white disc */}
       <mesh>
         <sphereGeometry args={[size * 0.25, 32, 32]} />
         <meshBasicMaterial
           ref={coreMat}
-          color="#FFD700"
+          color="#f2f0ec"
           transparent
-          opacity={0.8}
+          opacity={0.88}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Sun surface — faceted texture */}
+      {/* Moon surface — faceted for crater texture feel */}
       <mesh ref={wireRef}>
         <icosahedronGeometry args={[size * 0.5, 8]} />
         <meshBasicMaterial
           ref={surfaceMat}
-          color="#FFD700"
+          color="#e8eaf0"
           transparent
-          opacity={0.15}
+          opacity={0.10}
           side={THREE.DoubleSide}
           depthWrite={false}
         />
@@ -391,35 +371,35 @@ function GeometricShape() {
         <sphereGeometry args={[size * 0.35, 32, 32]} />
         <meshBasicMaterial
           ref={innerCoreMat}
-          color="#FFA500"
+          color="#b8c8d8"
           transparent
-          opacity={0.1}
+          opacity={0.08}
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Inner corona */}
+      {/* Inner glow halo */}
       <mesh>
         <sphereGeometry args={[size * 0.65, 32, 32]} />
         <meshBasicMaterial
           ref={corona1Mat}
-          color="#FFA500"
+          color="#8fa4bc"
           transparent
-          opacity={0.06}
+          opacity={0.05}
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
 
-      {/* Outer corona */}
+      {/* Outer glow */}
       <mesh>
         <sphereGeometry args={[size * 0.9, 32, 32]} />
         <meshBasicMaterial
           ref={corona2Mat}
-          color="#FF8C00"
+          color="#7090a8"
           transparent
-          opacity={0.04}
+          opacity={0.032}
           side={THREE.BackSide}
           depthWrite={false}
         />
@@ -430,9 +410,9 @@ function GeometricShape() {
         <sphereGeometry args={[size * 1.2, 32, 32]} />
         <meshBasicMaterial
           ref={atmosphereMat}
-          color="#FF8C00"
+          color="#5a7a96"
           transparent
-          opacity={0.025}
+          opacity={0.018}
           side={THREE.BackSide}
           depthWrite={false}
         />

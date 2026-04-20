@@ -4,14 +4,18 @@ import { useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 
 /* ─── Sea Waves — 3D depth, boat, pointer-interactive, page-beat ─── */
-export default function WaveGlobe() {
+export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouse = useRef({ x: 0.5, y: 0.5 });
+  const modeRef = useRef(mode);
   const beat = useRef(0);
   const beatDecay = useRef(0);
   const pathname = usePathname();
   const prevPath = useRef(pathname);
   const animId = useRef(0);
+
+  // Keep modeRef current without re-creating draw callback
+  useEffect(() => { modeRef.current = mode; }, [mode]);
 
   useEffect(() => {
     if (prevPath.current !== pathname) {
@@ -182,8 +186,8 @@ export default function WaveGlobe() {
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio, 2);
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
+    const w = canvas.clientWidth || window.innerWidth;
+    const h = canvas.clientHeight || window.innerHeight * 0.75;
 
     if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
       canvas.width = w * dpr;
@@ -205,17 +209,52 @@ export default function WaveGlobe() {
     const beatAmp = beatDecay.current * 45;
     const pointerInfluence = (mx - 0.5) * 0.3;
 
+    /* ─── Wave colors switch based on day/night ─── */
+    const isDay = modeRef.current === "day";
+
+    // Day: warm ocean blue-green tones visible against the blue sky
+    // Night: cool white/silver tones on dark background
+    const wc = isDay
+      ? [
+          // far-back
+          { s: "rgba(30,110,160,0.09)",  f: "rgba(30,110,160,0.03)" },
+          { s: "rgba(28,105,155,0.13)",  f: "rgba(28,105,155,0.04)" },
+          { s: "rgba(26,100,150,0.18)",  f: "rgba(26,100,150,0.06)" },
+          // mid
+          { s: "rgba(22,92,145,0.26)",   f: "rgba(22,92,145,0.09)"  },
+          { s: "rgba(18,85,138,0.34)",   f: "rgba(18,85,138,0.12)"  },
+          { s: "rgba(15,78,132,0.42)",   f: "rgba(15,78,132,0.15)"  },
+          // front
+          { s: "rgba(55,130,175,0.52)",  f: "rgba(55,130,175,0.18)" },
+          { s: "rgba(80,155,195,0.62)",  f: "rgba(80,155,195,0.22)" },
+          { s: "rgba(110,175,210,0.70)", f: "rgba(110,175,210,0.26)" },
+          { s: "rgba(145,200,225,0.78)", f: "rgba(145,200,225,0.30)" },
+        ]
+      : [
+          // night cool white
+          { s: "rgba(200,220,245,0.06)", f: "rgba(200,220,245,0.02)" },
+          { s: "rgba(195,218,242,0.09)", f: "rgba(195,218,242,0.03)" },
+          { s: "rgba(185,212,238,0.13)", f: "rgba(185,212,238,0.04)" },
+          { s: "rgba(170,205,232,0.20)", f: "rgba(170,205,232,0.07)" },
+          { s: "rgba(155,198,228,0.28)", f: "rgba(155,198,228,0.09)" },
+          { s: "rgba(140,190,222,0.36)", f: "rgba(140,190,222,0.12)" },
+          { s: "rgba(180,210,235,0.46)", f: "rgba(180,210,235,0.15)" },
+          { s: "rgba(210,228,245,0.55)", f: "rgba(210,228,245,0.18)" },
+          { s: "rgba(230,240,250,0.65)", f: "rgba(230,240,250,0.22)" },
+          { s: "rgba(245,250,255,0.75)", f: "rgba(245,250,255,0.28)" },
+        ];
+
     /* ─── Enhanced 3D wave layers with perspective depth ─── */
     const layers = [
-      // Far back — small, faint, blurred feel (deep Z)
+      // Far back — distant
       {
         baseY: h * 0.32,
         amp: 55,
         freq: 0.004,
         speed: 0.12,
-        stroke: "rgba(250,250,250,0.008)",
-        fill: "rgba(250,250,250,0.003)",
-        lineW: 0.3,
+        stroke: wc[0].s,
+        fill: wc[0].f,
+        lineW: 0.5,
         shadow: 0,
       },
       {
@@ -223,9 +262,9 @@ export default function WaveGlobe() {
         amp: 48,
         freq: 0.005,
         speed: 0.18,
-        stroke: "rgba(250,250,250,0.012)",
-        fill: "rgba(250,250,250,0.004)",
-        lineW: 0.4,
+        stroke: wc[1].s,
+        fill: wc[1].f,
+        lineW: 0.6,
         shadow: 0,
       },
       {
@@ -233,20 +272,20 @@ export default function WaveGlobe() {
         amp: 42,
         freq: 0.006,
         speed: 0.25,
-        stroke: "rgba(250,250,250,0.018)",
-        fill: "rgba(250,250,250,0.006)",
-        lineW: 0.5,
+        stroke: wc[2].s,
+        fill: wc[2].f,
+        lineW: 0.7,
         shadow: 0,
       },
-      // Mid layers — stronger presence
+      // Mid layers
       {
         baseY: h * 0.51,
         amp: 36,
         freq: 0.008,
         speed: 0.35,
-        stroke: "rgba(250,250,250,0.028)",
-        fill: "rgba(250,250,250,0.009)",
-        lineW: 0.6,
+        stroke: wc[3].s,
+        fill: wc[3].f,
+        lineW: 0.9,
         shadow: 2,
       },
       {
@@ -254,9 +293,9 @@ export default function WaveGlobe() {
         amp: 30,
         freq: 0.011,
         speed: 0.5,
-        stroke: "rgba(250,250,250,0.04)",
-        fill: "rgba(250,250,250,0.014)",
-        lineW: 0.7,
+        stroke: wc[4].s,
+        fill: wc[4].f,
+        lineW: 1.1,
         shadow: 4,
       },
       {
@@ -264,9 +303,9 @@ export default function WaveGlobe() {
         amp: 24,
         freq: 0.015,
         speed: 0.65,
-        stroke: "rgba(250,250,250,0.055)",
-        fill: "rgba(250,250,250,0.02)",
-        lineW: 0.8,
+        stroke: wc[5].s,
+        fill: wc[5].f,
+        lineW: 1.3,
         shadow: 6,
       },
       // Near front — bold, thick, strong (close Z)
@@ -275,9 +314,9 @@ export default function WaveGlobe() {
         amp: 20,
         freq: 0.02,
         speed: 0.85,
-        stroke: "rgba(250,250,250,0.07)",
-        fill: "rgba(250,250,250,0.025)",
-        lineW: 1.0,
+        stroke: wc[6].s,
+        fill: wc[6].f,
+        lineW: 1.6,
         shadow: 8,
       },
       {
@@ -285,9 +324,9 @@ export default function WaveGlobe() {
         amp: 15,
         freq: 0.027,
         speed: 1.05,
-        stroke: "rgba(250,250,250,0.09)",
-        fill: "rgba(250,250,250,0.032)",
-        lineW: 1.2,
+        stroke: wc[7].s,
+        fill: wc[7].f,
+        lineW: 2.0,
         shadow: 10,
       },
       {
@@ -295,9 +334,9 @@ export default function WaveGlobe() {
         amp: 10,
         freq: 0.035,
         speed: 1.3,
-        stroke: "rgba(250,250,250,0.11)",
-        fill: "rgba(250,250,250,0.04)",
-        lineW: 1.5,
+        stroke: wc[8].s,
+        fill: wc[8].f,
+        lineW: 2.4,
         shadow: 12,
       },
       {
@@ -305,19 +344,26 @@ export default function WaveGlobe() {
         amp: 6,
         freq: 0.045,
         speed: 1.6,
-        stroke: "rgba(250,250,250,0.13)",
-        fill: "rgba(250,250,250,0.05)",
-        lineW: 1.8,
+        stroke: wc[9].s,
+        fill: wc[9].f,
+        lineW: 2.8,
         shadow: 14,
       },
     ];
 
-    /* ─── Draw depth gradient (dark at top → slightly lighter at bottom) ─── */
+    /* ─── Draw depth gradient ─── */
     const depthGrad = ctx.createLinearGradient(0, h * 0.3, 0, h);
-    depthGrad.addColorStop(0, "rgba(0,0,0,0)");
-    depthGrad.addColorStop(0.4, "rgba(15,25,40,0.03)");
-    depthGrad.addColorStop(0.7, "rgba(20,35,55,0.06)");
-    depthGrad.addColorStop(1, "rgba(25,45,70,0.08)");
+    if (isDay) {
+      depthGrad.addColorStop(0, "rgba(0,60,120,0)");
+      depthGrad.addColorStop(0.4, "rgba(0,80,140,0.04)");
+      depthGrad.addColorStop(0.7, "rgba(0,90,150,0.08)");
+      depthGrad.addColorStop(1, "rgba(10,100,160,0.12)");
+    } else {
+      depthGrad.addColorStop(0, "rgba(0,0,0,0)");
+      depthGrad.addColorStop(0.4, "rgba(15,25,40,0.03)");
+      depthGrad.addColorStop(0.7, "rgba(20,35,55,0.06)");
+      depthGrad.addColorStop(1, "rgba(25,45,70,0.08)");
+    }
     ctx.fillStyle = depthGrad;
     ctx.fillRect(0, h * 0.3, w, h * 0.7);
 

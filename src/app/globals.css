@@ -136,3 +136,103 @@ body::before {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ─── Day/Night toggle button ─── */
+.day-night-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.day-night-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text);
+}
+.day-night-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Day mode overrides ─── */
+/*
+  Palette: warm parchment background, dark espresso text.
+  All key roles stay dark-on-light for clear readability.
+  --color-accent stays close to night amber but slightly deeper for contrast.
+*/
+[data-mode="day"] {
+  --color-bg:            #ede8df;   /* warm parchment — not stark white */
+  --color-text:          #1e1812;   /* dark espresso — max contrast */
+  --color-primary:       #1e1812;
+  --color-secondary:     #3d3228;   /* warm dark brown for sub-headings */
+  --color-muted:         #5a4e44;   /* readable medium brown, ~4.5:1 on bg */
+  --color-accent:        #b87333;   /* copper/amber — distinct, not neon */
+  --color-card:          #e4ddd2;   /* slightly darker than bg */
+  --color-border:        #c2b9ad;   /* visible but soft separator */
+  --color-surface:       #e8e2d8;
+  --color-surface-light: #ede8df;
+}
+
+[data-mode="day"] body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Day-mode component adjustments for readability */
+[data-mode="day"] .section-label {
+  color: var(--color-muted);
+}
+
+[data-mode="day"] .skill-tag {
+  color: var(--color-secondary);
+  border-color: var(--color-border);
+}
+[data-mode="day"] .skill-tag:hover {
+  color: var(--color-text);
+  border-color: rgba(0,0,0,0.25);
+  background: rgba(0,0,0,0.04);
+}
+
+[data-mode="day"] .arrow-link {
+  color: var(--color-text);
+}
+[data-mode="day"] .arrow-link:hover {
+  color: var(--color-secondary);
+}
+
+[data-mode="day"] .glass-card {
+  background: rgba(0,0,0,0.025);
+  border-color: var(--color-border);
+}
+[data-mode="day"] .glass-card:hover {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.18);
+}
+
+[data-mode="day"] .editorial-hr {
+  background: var(--color-border);
+}
+
+[data-mode="day"] body::before {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
+}
+
+[data-mode="day"] .day-night-toggle {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-muted);
+}
+[data-mode="day"] .day-night-toggle:hover {
+  border-color: rgba(0, 0, 0, 0.32);
+  background: rgba(0, 0, 0, 0.09);
+  color: var(--color-text);
+}
