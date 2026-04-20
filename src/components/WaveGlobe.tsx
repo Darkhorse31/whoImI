@@ -212,23 +212,23 @@ export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }
     /* ─── Wave colors switch based on day/night ─── */
     const isDay = modeRef.current === "day";
 
-    // Day: warm ocean blue-green tones visible against the blue sky
+    // Day: cooler lavender-grey tones matching the #484b6a palette
     // Night: cool white/silver tones on dark background
     const wc = isDay
       ? [
-          // far-back
-          { s: "rgba(30,110,160,0.09)",  f: "rgba(30,110,160,0.03)" },
-          { s: "rgba(28,105,155,0.13)",  f: "rgba(28,105,155,0.04)" },
-          { s: "rgba(26,100,150,0.18)",  f: "rgba(26,100,150,0.06)" },
-          // mid
-          { s: "rgba(22,92,145,0.26)",   f: "rgba(22,92,145,0.09)"  },
-          { s: "rgba(18,85,138,0.34)",   f: "rgba(18,85,138,0.12)"  },
-          { s: "rgba(15,78,132,0.42)",   f: "rgba(15,78,132,0.15)"  },
-          // front
-          { s: "rgba(55,130,175,0.52)",  f: "rgba(55,130,175,0.18)" },
-          { s: "rgba(80,155,195,0.62)",  f: "rgba(80,155,195,0.22)" },
-          { s: "rgba(110,175,210,0.70)", f: "rgba(110,175,210,0.26)" },
-          { s: "rgba(145,200,225,0.78)", f: "rgba(145,200,225,0.30)" },
+          // far-back — subtle lavender hints
+          { s: "rgba(147,148,165,0.08)",  f: "rgba(147,148,165,0.025)" },
+          { s: "rgba(147,148,165,0.12)",  f: "rgba(147,148,165,0.04)"  },
+          { s: "rgba(140,141,160,0.17)",  f: "rgba(140,141,160,0.055)" },
+          // mid — stronger grey-purple presence
+          { s: "rgba(107,110,138,0.25)",  f: "rgba(107,110,138,0.08)"  },
+          { s: "rgba(90,93,120,0.33)",    f: "rgba(90,93,120,0.11)"    },
+          { s: "rgba(72,75,106,0.40)",    f: "rgba(72,75,106,0.14)"    },
+          // front — deepest navy-purple, most visible
+          { s: "rgba(72,75,106,0.50)",    f: "rgba(72,75,106,0.17)"    },
+          { s: "rgba(85,88,118,0.60)",    f: "rgba(85,88,118,0.21)"    },
+          { s: "rgba(100,103,132,0.68)",  f: "rgba(100,103,132,0.25)"  },
+          { s: "rgba(120,122,148,0.76)",  f: "rgba(120,122,148,0.30)"  },
         ]
       : [
           // night cool white
@@ -354,10 +354,10 @@ export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }
     /* ─── Draw depth gradient ─── */
     const depthGrad = ctx.createLinearGradient(0, h * 0.3, 0, h);
     if (isDay) {
-      depthGrad.addColorStop(0, "rgba(0,60,120,0)");
-      depthGrad.addColorStop(0.4, "rgba(0,80,140,0.04)");
-      depthGrad.addColorStop(0.7, "rgba(0,90,150,0.08)");
-      depthGrad.addColorStop(1, "rgba(10,100,160,0.12)");
+      depthGrad.addColorStop(0, "rgba(72,75,106,0)");
+      depthGrad.addColorStop(0.4, "rgba(72,75,106,0.03)");
+      depthGrad.addColorStop(0.7, "rgba(72,75,106,0.06)");
+      depthGrad.addColorStop(1, "rgba(72,75,106,0.10)");
     } else {
       depthGrad.addColorStop(0, "rgba(0,0,0,0)");
       depthGrad.addColorStop(0.4, "rgba(15,25,40,0.03)");

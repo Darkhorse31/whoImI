@@ -126,17 +126,17 @@ export default function DaySky() {
       time += 1;
       ctx.clearRect(0, 0, w, h);
 
-      /* ── Sky gradient ── */
+      /* ── Sky gradient — cooler lavender-blue matching palette ── */
       const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
-      skyGrad.addColorStop(0, "#1a6dd4");    // deep blue top
-      skyGrad.addColorStop(0.3, "#4a9de8");  // mid blue
-      skyGrad.addColorStop(0.6, "#87c4f7");  // light blue
-      skyGrad.addColorStop(0.85, "#c8e4fb"); // pale horizon
-      skyGrad.addColorStop(1, "#f0e8d8");    // warm ground glow
+      skyGrad.addColorStop(0,    "#484b6a");  // dark navy-purple top
+      skyGrad.addColorStop(0.25, "#6b6e8a");  // medium purple-grey
+      skyGrad.addColorStop(0.55, "#9394a5");  // muted lavender-grey
+      skyGrad.addColorStop(0.80, "#d2d3db");  // cool light grey horizon
+      skyGrad.addColorStop(1,    "#fafafa");  // near-white at ground
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, w, h);
 
-      /* ── Sun ── */
+      /* ── Sun — soft warm white-yellow, harmonious with cool sky ── */
       const sunX = w * 0.75;
       const sunY = h * 0.18 + Math.sin(time * 0.008) * 5;
       const sunRadius = 45;
@@ -147,10 +147,10 @@ export default function DaySky() {
         sunX, sunY, sunRadius * 0.5,
         sunX, sunY, glowRadius
       );
-      sunGlow.addColorStop(0, "rgba(255, 240, 180, 0.35)");
-      sunGlow.addColorStop(0.3, "rgba(255, 220, 120, 0.15)");
-      sunGlow.addColorStop(0.6, "rgba(255, 200, 80, 0.05)");
-      sunGlow.addColorStop(1, "rgba(255, 180, 60, 0)");
+      sunGlow.addColorStop(0, "rgba(255, 248, 220, 0.40)");
+      sunGlow.addColorStop(0.3, "rgba(255, 240, 200, 0.18)");
+      sunGlow.addColorStop(0.6, "rgba(255, 235, 180, 0.07)");
+      sunGlow.addColorStop(1, "rgba(255, 230, 160, 0)");
       ctx.beginPath();
       ctx.arc(sunX, sunY, glowRadius, 0, Math.PI * 2);
       ctx.fillStyle = sunGlow;
@@ -170,20 +170,20 @@ export default function DaySky() {
         ctx.lineTo(-3, -sunRadius * 3);
         ctx.lineTo(3, -sunRadius * 3);
         ctx.closePath();
-        ctx.fillStyle = `rgba(255, 230, 150, ${0.06 + Math.sin(time * 0.02 + i) * 0.03})`;
+        ctx.fillStyle = `rgba(255, 240, 180, ${0.07 + Math.sin(time * 0.02 + i) * 0.03})`;
         ctx.fill();
         ctx.restore();
       }
       ctx.restore();
 
-      // sun disc
+      // sun disc — soft white-gold
       const discGrad = ctx.createRadialGradient(
         sunX, sunY, 0,
         sunX, sunY, sunRadius
       );
-      discGrad.addColorStop(0, "#fffbe6");
-      discGrad.addColorStop(0.7, "#ffe066");
-      discGrad.addColorStop(1, "#ffcc33");
+      discGrad.addColorStop(0,   "#fffff8");
+      discGrad.addColorStop(0.6, "#fff5c0");
+      discGrad.addColorStop(1,   "#ffe980");
       ctx.beginPath();
       ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
       ctx.fillStyle = discGrad;
@@ -199,10 +199,10 @@ export default function DaySky() {
         drawCloud(ctx, cloud);
       }
 
-      /* ── Light haze at bottom ── */
+      /* ── Light haze at bottom — cool grey-white ── */
       const hazeGrad = ctx.createLinearGradient(0, h * 0.7, 0, h);
-      hazeGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-      hazeGrad.addColorStop(1, "rgba(255, 248, 230, 0.15)");
+      hazeGrad.addColorStop(0, "rgba(250, 250, 250, 0)");
+      hazeGrad.addColorStop(1, "rgba(250, 250, 250, 0.20)");
       ctx.fillStyle = hazeGrad;
       ctx.fillRect(0, h * 0.7, w, h * 0.3);
 

@@ -163,21 +163,24 @@ body::before {
 
 /* ─── Day mode overrides ─── */
 /*
-  Palette: warm parchment background, dark espresso text.
-  All key roles stay dark-on-light for clear readability.
-  --color-accent stays close to night amber but slightly deeper for contrast.
+  Palette:
+    #fafafa  → bg (near-white)
+    #e4e5f1  → card / surface (light lavender-grey)
+    #d2d3db  → border / surface-light (cool grey)
+    #9394a5  → muted / secondary text (grey-purple)
+    #484b6a  → text / primary (dark navy-purple)
 */
 [data-mode="day"] {
-  --color-bg:            #ede8df;   /* warm parchment — not stark white */
-  --color-text:          #1e1812;   /* dark espresso — max contrast */
-  --color-primary:       #1e1812;
-  --color-secondary:     #3d3228;   /* warm dark brown for sub-headings */
-  --color-muted:         #5a4e44;   /* readable medium brown, ~4.5:1 on bg */
-  --color-accent:        #b87333;   /* copper/amber — distinct, not neon */
-  --color-card:          #e4ddd2;   /* slightly darker than bg */
-  --color-border:        #c2b9ad;   /* visible but soft separator */
-  --color-surface:       #e8e2d8;
-  --color-surface-light: #ede8df;
+  --color-bg:            #fafafa;
+  --color-text:          #484b6a;
+  --color-primary:       #484b6a;
+  --color-secondary:     #6b6e8a;   /* midpoint between muted and text */
+  --color-muted:         #9394a5;
+  --color-accent:        #484b6a;   /* navy-purple as accent in light mode */
+  --color-card:          #e4e5f1;
+  --color-border:        #d2d3db;
+  --color-surface:       #e4e5f1;
+  --color-surface-light: #eeeef5;
 }
 
 [data-mode="day"] body {
@@ -196,24 +199,24 @@ body::before {
 }
 [data-mode="day"] .skill-tag:hover {
   color: var(--color-text);
-  border-color: rgba(0,0,0,0.25);
-  background: rgba(0,0,0,0.04);
+  border-color: #9394a5;
+  background: rgba(72,75,106,0.06);
 }
 
 [data-mode="day"] .arrow-link {
   color: var(--color-text);
 }
 [data-mode="day"] .arrow-link:hover {
-  color: var(--color-secondary);
+  color: #484b6a;
 }
 
 [data-mode="day"] .glass-card {
-  background: rgba(0,0,0,0.025);
+  background: rgba(228,229,241,0.6);
   border-color: var(--color-border);
 }
 [data-mode="day"] .glass-card:hover {
-  background: rgba(0,0,0,0.05);
-  border-color: rgba(0,0,0,0.18);
+  background: rgba(228,229,241,0.9);
+  border-color: #9394a5;
 }
 
 [data-mode="day"] .editorial-hr {
@@ -222,17 +225,17 @@ body::before {
 
 [data-mode="day"] body::before {
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(72,75,106,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(72,75,106,0.04) 1px, transparent 1px);
 }
 
 [data-mode="day"] .day-night-toggle {
-  border-color: rgba(0, 0, 0, 0.18);
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--color-muted);
+  border-color: #d2d3db;
+  background: rgba(228,229,241,0.7);
+  color: #9394a5;
 }
 [data-mode="day"] .day-night-toggle:hover {
-  border-color: rgba(0, 0, 0, 0.32);
-  background: rgba(0, 0, 0, 0.09);
-  color: var(--color-text);
+  border-color: #9394a5;
+  background: rgba(228,229,241,1);
+  color: #484b6a;
 }
