@@ -8,6 +8,7 @@ import WaveGlobeWrapper from "@/components/WaveGlobeWrapper";
 import { DayNightProvider } from "@/context/DayNightContext";
 import DayNightEnvironment from "@/components/DayNightEnvironment";
 import SmoothScroll from "@/components/SmoothScroll";
+import DayParticles from "@/components/DayParticles";
 
 export const metadata: Metadata = {
   title: "Prateek Kumar — Full Stack Developer",
@@ -47,6 +48,7 @@ export default function RootLayout({
         <DayNightProvider>
           <SmoothScroll>
             <DayNightEnvironment />
+            <DayParticles />
             <WaveGlobeWrapper />
             <FilmGrainWrapper />
             <InteractiveModelWrapper />
