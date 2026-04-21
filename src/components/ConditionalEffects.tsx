@@ -12,6 +12,9 @@ const SnowEffect = dynamic(() => import("@/components/SnowEffect"), {
 const RainEffect = dynamic(() => import("@/components/RainEffect"), {
   ssr: false,
 });
+const ThunderEffect = dynamic(() => import("@/components/ThunderEffect"), {
+  ssr: false,
+});
 const StarsEffect = dynamic(() => import("@/components/StarsEffect"), {
   ssr: false,
 });
@@ -32,6 +35,7 @@ export default function ConditionalEffects() {
     filmGrainEnabled,
     snowEnabled,
     rainEnabled,
+    thunderEnabled,
     starsEnabled,
     animatedBgEnabled,
     oceanFishEnabled,
@@ -45,6 +49,7 @@ export default function ConditionalEffects() {
       {filmGrainEnabled && <FilmGrain />}
       {snowEnabled && <SnowEffect />}
       {rainEnabled && <RainEffect />}
+      {thunderEnabled && <ThunderEffect />}
       {oceanFishEnabled && <OceanFishEffect />}
       {particlesEnabled && <DayParticles />}
     </>

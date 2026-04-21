@@ -82,6 +82,7 @@ export interface CustomizationState {
   sidebarOpen: boolean;
   snowEnabled: boolean;
   rainEnabled: boolean;
+  thunderEnabled: boolean;
   starsEnabled: boolean;
   animatedBgEnabled: boolean;
   oceanFishEnabled: boolean;
@@ -97,6 +98,7 @@ interface CustomizationContextType extends CustomizationState {
   closeSidebar: () => void;
   setSnowEnabled: (v: boolean) => void;
   setRainEnabled: (v: boolean) => void;
+  setThunderEnabled: (v: boolean) => void;
   setStarsEnabled: (v: boolean) => void;
   setAnimatedBgEnabled: (v: boolean) => void;
   setOceanFishEnabled: (v: boolean) => void;
@@ -112,6 +114,7 @@ const defaults: CustomizationState = {
   sidebarOpen: false,
   snowEnabled: false,
   rainEnabled: false,
+  thunderEnabled: false,
   starsEnabled: false,
   animatedBgEnabled: false,
   oceanFishEnabled: false,
@@ -128,6 +131,7 @@ const CustomizationContext = createContext<CustomizationContextType>({
   closeSidebar: () => {},
   setSnowEnabled: () => {},
   setRainEnabled: () => {},
+  setThunderEnabled: () => {},
   setStarsEnabled: () => {},
   setAnimatedBgEnabled: () => {},
   setOceanFishEnabled: () => {},
@@ -276,6 +280,10 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
     (v: boolean) => setState((s) => ({ ...s, rainEnabled: v })),
     [],
   );
+  const setThunderEnabled = useCallback(
+    (v: boolean) => setState((s) => ({ ...s, thunderEnabled: v })),
+    [],
+  );
   const setStarsEnabled = useCallback(
     (v: boolean) => setState((s) => ({ ...s, starsEnabled: v })),
     [],
@@ -330,6 +338,7 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
         closeSidebar,
         setSnowEnabled,
         setRainEnabled,
+        setThunderEnabled,
         setStarsEnabled,
         setAnimatedBgEnabled,
         setOceanFishEnabled,

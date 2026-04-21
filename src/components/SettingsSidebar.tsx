@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, RotateCcw, Snowflake, Film, Sparkles, Zap, CloudRain, Stars, Waves, Fish } from "lucide-react";
+import { X, RotateCcw, Snowflake, Film, Sparkles, Zap, CloudRain, CloudLightning, Stars, Waves, Fish } from "lucide-react";
 import {
   useCustomization,
   THEME_PRESETS,
@@ -125,6 +125,8 @@ export default function SettingsSidebar() {
     setSnowEnabled,
     rainEnabled,
     setRainEnabled,
+    thunderEnabled,
+    setThunderEnabled,
     starsEnabled,
     setStarsEnabled,
     animatedBgEnabled,
@@ -222,6 +224,12 @@ export default function SettingsSidebar() {
                   onChange={setRainEnabled}
                   label="Rain"
                   icon={<CloudRain size={14} />}
+                />
+                <Toggle
+                  enabled={thunderEnabled}
+                  onChange={setThunderEnabled}
+                  label="Thunder"
+                  icon={<CloudLightning size={14} />}
                 />
                 <Toggle
                   enabled={starsEnabled}
