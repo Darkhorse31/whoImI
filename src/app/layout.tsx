@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FilmGrainWrapper from "@/components/FilmGrainWrapper";
 import InteractiveModelWrapper from "@/components/InteractiveModelWrapper";
 import WaveGlobeWrapper from "@/components/WaveGlobeWrapper";
 import { DayNightProvider } from "@/context/DayNightContext";
+import { CustomizationProvider } from "@/context/CustomizationContext";
 import DayNightEnvironment from "@/components/DayNightEnvironment";
 import SmoothScroll from "@/components/SmoothScroll";
-import DayParticles from "@/components/DayParticles";
+import SettingsButton from "@/components/SettingsButton";
+import SettingsSidebar from "@/components/SettingsSidebar";
+import ConditionalEffects from "@/components/ConditionalEffects";
 
 export const metadata: Metadata = {
   title: "Prateek Kumar — Full Stack Developer",
@@ -46,16 +48,19 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-bg text-text font-body">
         <DayNightProvider>
-          <SmoothScroll>
-            <DayNightEnvironment />
-            <DayParticles />
-            <WaveGlobeWrapper />
-            <FilmGrainWrapper />
-            <InteractiveModelWrapper />
-            <Navbar />
-            <main className="relative z-20">{children}</main>
-            <Footer />
-          </SmoothScroll>
+          <CustomizationProvider>
+            <SmoothScroll>
+              <DayNightEnvironment />
+              <ConditionalEffects />
+              <WaveGlobeWrapper />
+              <InteractiveModelWrapper />
+              <Navbar />
+              <main className="relative z-20">{children}</main>
+              <Footer />
+              <SettingsButton />
+              <SettingsSidebar />
+            </SmoothScroll>
+          </CustomizationProvider>
         </DayNightProvider>
       </body>
     </html>
