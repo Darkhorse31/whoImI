@@ -31,16 +31,25 @@ function getAutoMode(): Mode {
 }
 
 export function DayNightProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<Mode>(getAutoMode);
+  /* Start with a fixed default so server & client HTML match (no hydration mismatch).
+     The real time-based mode is applied in the useEffect below (client-only). */
+  const [mode, setMode] = useState<Mode>("night");
+  const [mounted, setMounted] = useState(false);
 
   /* sync with real time every minute (only if user hasn't manually toggled) */
   const [manual, setManual] = useState(false);
 
+  /* Hydrate with the real time-based mode after mount */
   useEffect(() => {
-    if (manual) return;
+    setMode(getAutoMode());
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || manual) return;
     const id = setInterval(() => setMode(getAutoMode()), 60_000);
     return () => clearInterval(id);
-  }, [manual]);
+  }, [mounted, manual]);
 
   /* sync data-mode attribute on <html> for CSS variable switching */
   useEffect(() => {

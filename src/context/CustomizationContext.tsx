@@ -81,6 +81,9 @@ export const THEME_PRESETS: Record<string, ThemeColors> = {
 export interface CustomizationState {
   sidebarOpen: boolean;
   snowEnabled: boolean;
+  rainEnabled: boolean;
+  starsEnabled: boolean;
+  animatedBgEnabled: boolean;
   filmGrainEnabled: boolean;
   particlesEnabled: boolean;
   animationsEnabled: boolean;
@@ -92,6 +95,9 @@ interface CustomizationContextType extends CustomizationState {
   toggleSidebar: () => void;
   closeSidebar: () => void;
   setSnowEnabled: (v: boolean) => void;
+  setRainEnabled: (v: boolean) => void;
+  setStarsEnabled: (v: boolean) => void;
+  setAnimatedBgEnabled: (v: boolean) => void;
   setFilmGrainEnabled: (v: boolean) => void;
   setParticlesEnabled: (v: boolean) => void;
   setAnimationsEnabled: (v: boolean) => void;
@@ -103,6 +109,9 @@ interface CustomizationContextType extends CustomizationState {
 const defaults: CustomizationState = {
   sidebarOpen: false,
   snowEnabled: false,
+  rainEnabled: false,
+  starsEnabled: false,
+  animatedBgEnabled: false,
   filmGrainEnabled: true,
   particlesEnabled: true,
   animationsEnabled: true,
@@ -115,6 +124,9 @@ const CustomizationContext = createContext<CustomizationContextType>({
   toggleSidebar: () => {},
   closeSidebar: () => {},
   setSnowEnabled: () => {},
+  setRainEnabled: () => {},
+  setStarsEnabled: () => {},
+  setAnimatedBgEnabled: () => {},
   setFilmGrainEnabled: () => {},
   setParticlesEnabled: () => {},
   setAnimationsEnabled: () => {},
@@ -150,51 +162,83 @@ function saveToStorage(state: CustomizationState) {
   }
 }
 
-/* ─── Apply CSS custom properties to :root ─── */
+/* ─── Sanitize CSS color values to prevent injection ─── */
+const HEX_RE = /^#[0-9a-fA-F]{3,8}$/;
+function safeCSSColor(value: string): string | null {
+  return HEX_RE.test(value) ? value : null;
+}
+
+/* ─── Apply theme via injected <style> with a mode-aware selector ─── */
+const STYLE_ID = "custom-theme-colors";
+
 function applyThemeColors(colors: ThemeColors) {
-  const root = document.documentElement;
-  root.style.setProperty("--color-primary", colors.primary);
-  root.style.setProperty("--color-accent", colors.accent);
-  root.style.setProperty("--color-bg", colors.bg);
-  root.style.setProperty("--color-text", colors.text);
-  root.style.setProperty("--color-card", colors.card);
-  root.style.setProperty("--color-border", colors.border);
-  root.style.setProperty("--color-surface", colors.surface);
+  let styleEl = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = STYLE_ID;
+    document.head.appendChild(styleEl);
+  }
+
+  /* Build safe declarations */
+  const entries: [string, string][] = [
+    ["--color-primary", colors.primary],
+    ["--color-accent", colors.accent],
+    ["--color-bg", colors.bg],
+    ["--color-text", colors.text],
+    ["--color-card", colors.card],
+    ["--color-border", colors.border],
+    ["--color-surface", colors.surface],
+  ];
+
+  const declarations = entries
+    .map(([prop, val]) => {
+      const safe = safeCSSColor(val);
+      return safe ? `${prop}: ${safe};` : null;
+    })
+    .filter(Boolean)
+    .join("\n      ");
+
+  /* :root:not([data-mode="day"]) → night-mode only, higher specificity than
+     @theme's :root but doesn't match in day mode, so [data-mode="day"]
+     rules still take over correctly. */
+  styleEl.textContent = `
+    :root:not([data-mode="day"]) {
+      ${declarations}
+    }
+  `;
+}
+
+function clearThemeColors() {
+  const styleEl = document.getElementById(STYLE_ID);
+  if (styleEl) styleEl.remove();
 }
 
 export function CustomizationProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<CustomizationState>(() => ({
-    ...defaults,
-    ...loadFromStorage(),
-    sidebarOpen: false, // always start closed
-  }));
+  /* Start with fixed defaults so server & client HTML match (no hydration mismatch).
+     localStorage values are loaded in the useEffect below (client-only). */
+  const [state, setState] = useState<CustomizationState>(defaults);
+  const [hydrated, setHydrated] = useState(false);
 
-  /* Persist on change */
+  /* Hydrate from localStorage after mount */
   useEffect(() => {
-    saveToStorage(state);
-  }, [state]);
-
-  /* Apply CSS vars when colors change (only in night mode — day overrides itself) */
-  useEffect(() => {
-    const mode = document.documentElement.getAttribute("data-mode");
-    if (mode !== "day") {
-      applyThemeColors(state.customColors);
+    const stored = loadFromStorage();
+    if (Object.keys(stored).length > 0) {
+      setState((s) => ({ ...s, ...stored, sidebarOpen: false }));
     }
-  }, [state.customColors]);
+    setHydrated(true);
+  }, []);
 
-  /* Re-apply when switching back to night */
+  /* Persist on change (only after hydration to avoid overwriting with defaults) */
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const mode = document.documentElement.getAttribute("data-mode");
-      if (mode !== "day") {
-        applyThemeColors(state.customColors);
-      }
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-mode"],
-    });
-    return () => observer.disconnect();
+    if (!hydrated) return;
+    saveToStorage(state);
+  }, [state, hydrated]);
+
+  /* Apply CSS vars whenever custom colors change — the injected <style>
+     uses :root:not([data-mode="day"]) so it only affects night mode
+     automatically; no JS mode-check needed. */
+  useEffect(() => {
+    applyThemeColors(state.customColors);
   }, [state.customColors]);
 
   const toggleSidebar = useCallback(
@@ -207,6 +251,18 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
   );
   const setSnowEnabled = useCallback(
     (v: boolean) => setState((s) => ({ ...s, snowEnabled: v })),
+    [],
+  );
+  const setRainEnabled = useCallback(
+    (v: boolean) => setState((s) => ({ ...s, rainEnabled: v })),
+    [],
+  );
+  const setStarsEnabled = useCallback(
+    (v: boolean) => setState((s) => ({ ...s, starsEnabled: v })),
+    [],
+  );
+  const setAnimatedBgEnabled = useCallback(
+    (v: boolean) => setState((s) => ({ ...s, animatedBgEnabled: v })),
     [],
   );
   const setFilmGrainEnabled = useCallback(
@@ -240,17 +296,7 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
   );
   const resetAll = useCallback(() => {
     setState({ ...defaults, sidebarOpen: true });
-    // remove inline styles so @theme defaults kick back in
-    const root = document.documentElement;
-    [
-      "--color-primary",
-      "--color-accent",
-      "--color-bg",
-      "--color-text",
-      "--color-card",
-      "--color-border",
-      "--color-surface",
-    ].forEach((p) => root.style.removeProperty(p));
+    clearThemeColors();
   }, []);
 
   return (
@@ -260,6 +306,9 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
         toggleSidebar,
         closeSidebar,
         setSnowEnabled,
+        setRainEnabled,
+        setStarsEnabled,
+        setAnimatedBgEnabled,
         setFilmGrainEnabled,
         setParticlesEnabled,
         setAnimationsEnabled,
