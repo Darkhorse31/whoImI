@@ -19,6 +19,10 @@ const AnimatedBackground = dynamic(
   () => import("@/components/AnimatedBackground"),
   { ssr: false },
 );
+const OceanFishEffect = dynamic(
+  () => import("@/components/OceanFishEffect"),
+  { ssr: false },
+);
 const DayParticles = dynamic(() => import("@/components/DayParticles"), {
   ssr: false,
 });
@@ -30,6 +34,7 @@ export default function ConditionalEffects() {
     rainEnabled,
     starsEnabled,
     animatedBgEnabled,
+    oceanFishEnabled,
     particlesEnabled,
   } = useCustomization();
 
@@ -40,6 +45,7 @@ export default function ConditionalEffects() {
       {filmGrainEnabled && <FilmGrain />}
       {snowEnabled && <SnowEffect />}
       {rainEnabled && <RainEffect />}
+      {oceanFishEnabled && <OceanFishEffect />}
       {particlesEnabled && <DayParticles />}
     </>
   );

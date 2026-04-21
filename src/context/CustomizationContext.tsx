@@ -84,6 +84,7 @@ export interface CustomizationState {
   rainEnabled: boolean;
   starsEnabled: boolean;
   animatedBgEnabled: boolean;
+  oceanFishEnabled: boolean;
   filmGrainEnabled: boolean;
   particlesEnabled: boolean;
   animationsEnabled: boolean;
@@ -98,6 +99,7 @@ interface CustomizationContextType extends CustomizationState {
   setRainEnabled: (v: boolean) => void;
   setStarsEnabled: (v: boolean) => void;
   setAnimatedBgEnabled: (v: boolean) => void;
+  setOceanFishEnabled: (v: boolean) => void;
   setFilmGrainEnabled: (v: boolean) => void;
   setParticlesEnabled: (v: boolean) => void;
   setAnimationsEnabled: (v: boolean) => void;
@@ -112,6 +114,7 @@ const defaults: CustomizationState = {
   rainEnabled: false,
   starsEnabled: false,
   animatedBgEnabled: false,
+  oceanFishEnabled: false,
   filmGrainEnabled: true,
   particlesEnabled: true,
   animationsEnabled: true,
@@ -127,6 +130,7 @@ const CustomizationContext = createContext<CustomizationContextType>({
   setRainEnabled: () => {},
   setStarsEnabled: () => {},
   setAnimatedBgEnabled: () => {},
+  setOceanFishEnabled: () => {},
   setFilmGrainEnabled: () => {},
   setParticlesEnabled: () => {},
   setAnimationsEnabled: () => {},
@@ -171,12 +175,19 @@ function safeCSSColor(value: string): string | null {
 /* ─── Apply theme via injected <style> with a mode-aware selector ─── */
 const STYLE_ID = "custom-theme-colors";
 
-function applyThemeColors(colors: ThemeColors) {
+function applyThemeColors(colors: ThemeColors, isDefault: boolean) {
   let styleEl = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
   if (!styleEl) {
     styleEl = document.createElement("style");
     styleEl.id = STYLE_ID;
     document.head.appendChild(styleEl);
+  }
+
+  /* When using the default preset, remove injected overrides so the
+     original @theme / [data-mode="day"] rules in globals.css take over. */
+  if (isDefault) {
+    styleEl.textContent = "";
+    return;
   }
 
   /* Build safe declarations */
@@ -198,12 +209,20 @@ function applyThemeColors(colors: ThemeColors) {
     .filter(Boolean)
     .join("\n      ");
 
-  /* :root:not([data-mode="day"]) → night-mode only, higher specificity than
-     @theme's :root but doesn't match in day mode, so [data-mode="day"]
-     rules still take over correctly. */
+  /* Apply custom colors in BOTH modes:
+     - Night: :root:not([data-mode="day"]) overrides the @theme defaults.
+     - Day: [data-mode="day"] with higher specificity (html[...]) overrides
+       the hardcoded day palette in globals.css. */
   styleEl.textContent = `
     :root:not([data-mode="day"]) {
       ${declarations}
+    }
+    html[data-mode="day"] {
+      ${declarations}
+    }
+    html[data-mode="day"] body {
+      background: var(--color-bg);
+      color: var(--color-text);
     }
   `;
 }
@@ -234,12 +253,12 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
     saveToStorage(state);
   }, [state, hydrated]);
 
-  /* Apply CSS vars whenever custom colors change — the injected <style>
-     uses :root:not([data-mode="day"]) so it only affects night mode
-     automatically; no JS mode-check needed. */
+  /* Apply CSS vars whenever custom colors or preset change — the injected
+     <style> covers both night and day selectors. When on the "default"
+     preset we clear the overrides so the original CSS takes over. */
   useEffect(() => {
-    applyThemeColors(state.customColors);
-  }, [state.customColors]);
+    applyThemeColors(state.customColors, state.themePreset === "default");
+  }, [state.customColors, state.themePreset]);
 
   const toggleSidebar = useCallback(
     () => setState((s) => ({ ...s, sidebarOpen: !s.sidebarOpen })),
@@ -263,6 +282,10 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
   );
   const setAnimatedBgEnabled = useCallback(
     (v: boolean) => setState((s) => ({ ...s, animatedBgEnabled: v })),
+    [],
+  );
+  const setOceanFishEnabled = useCallback(
+    (v: boolean) => setState((s) => ({ ...s, oceanFishEnabled: v })),
     [],
   );
   const setFilmGrainEnabled = useCallback(
@@ -309,6 +332,7 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
         setRainEnabled,
         setStarsEnabled,
         setAnimatedBgEnabled,
+        setOceanFishEnabled,
         setFilmGrainEnabled,
         setParticlesEnabled,
         setAnimationsEnabled,

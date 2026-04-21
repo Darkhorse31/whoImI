@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, RotateCcw, Snowflake, Film, Sparkles, Zap, CloudRain, Stars, Waves } from "lucide-react";
+import { X, RotateCcw, Snowflake, Film, Sparkles, Zap, CloudRain, Stars, Waves, Fish } from "lucide-react";
 import {
   useCustomization,
   THEME_PRESETS,
@@ -129,6 +129,8 @@ export default function SettingsSidebar() {
     setStarsEnabled,
     animatedBgEnabled,
     setAnimatedBgEnabled,
+    oceanFishEnabled,
+    setOceanFishEnabled,
     filmGrainEnabled,
     setFilmGrainEnabled,
     particlesEnabled,
@@ -170,13 +172,23 @@ export default function SettingsSidebar() {
             {/* Header */}
             <div className="settings-header">
               <h2 className="settings-title">Customize</h2>
-              <button
-                onClick={closeSidebar}
-                className="settings-close-btn"
-                aria-label="Close settings"
-              >
-                <X size={18} />
-              </button>
+              <div className="settings-header-actions">
+                <button
+                  onClick={resetAll}
+                  className="settings-reset-btn-top"
+                  aria-label="Reset to defaults"
+                  title="Reset to defaults"
+                >
+                  <RotateCcw size={15} />
+                </button>
+                <button
+                  onClick={closeSidebar}
+                  className="settings-close-btn"
+                  aria-label="Close settings"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Scrollable content */}
@@ -222,6 +234,12 @@ export default function SettingsSidebar() {
                   onChange={setAnimatedBgEnabled}
                   label="Animated BG"
                   icon={<Waves size={14} />}
+                />
+                <Toggle
+                  enabled={oceanFishEnabled}
+                  onChange={setOceanFishEnabled}
+                  label="Ocean Fish"
+                  icon={<Fish size={14} />}
                 />
                 <Toggle
                   enabled={filmGrainEnabled}
@@ -286,14 +304,6 @@ export default function SettingsSidebar() {
                   colorKey="border"
                 />
               </Section>
-
-              {/* Reset */}
-              <div className="settings-reset-wrap">
-                <button onClick={resetAll} className="settings-reset-btn">
-                  <RotateCcw size={14} />
-                  Reset to defaults
-                </button>
-              </div>
             </div>
           </motion.aside>
         </>
