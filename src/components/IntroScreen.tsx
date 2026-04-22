@@ -281,12 +281,12 @@ function BokehCanvas({
   );
 }
 
-/* ── Staggered character slide-up reveal ── */
+/* ── Visible one-by-one letter reveal ── */
 function CharReveal({
   text,
   delay = 0,
   className = "",
-  stagger = 0.04,
+  stagger = 0.12,
 }: {
   text: string;
   delay?: number;
@@ -299,10 +299,20 @@ function CharReveal({
         <span key={i} className="inline-block overflow-hidden">
           <motion.span
             className="inline-block will-change-transform"
-            initial={{ y: "120%", opacity: 0 }}
-            animate={{ y: "0%", opacity: 1 }}
+            initial={{
+              y: "110%",
+              opacity: 0,
+              filter: "blur(8px)",
+              scale: 0.7,
+            }}
+            animate={{
+              y: "0%",
+              opacity: 1,
+              filter: "blur(0px)",
+              scale: 1,
+            }}
             transition={{
-              duration: 0.7,
+              duration: 0.6,
               delay: delay + i * stagger,
               ease: [0.22, 1, 0.36, 1],
             }}
