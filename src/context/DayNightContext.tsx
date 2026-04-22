@@ -39,9 +39,8 @@ export function DayNightProvider({ children }: { children: ReactNode }) {
   /* sync with real time every minute (only if user hasn't manually toggled) */
   const [manual, setManual] = useState(false);
 
-  /* Hydrate with the real time-based mode after mount */
+  /* Hydrate after mount — always start in night (dark) mode */
   useEffect(() => {
-    setMode(getAutoMode());
     setMounted(true);
   }, []);
 
