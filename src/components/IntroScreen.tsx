@@ -190,32 +190,35 @@ function BokehCanvas({
         const pElapsed = Math.max(0, elapsed - p.delay);
 
         if (phaseRef.current === 0) {
-          // Converge toward center
-          const t = Math.min(1, pElapsed * p.speed * 40);
-          const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
-          p.x = p.x + (p.targetX - p.x) * ease * 0.08;
-          p.y = p.y + (p.targetY - p.y) * ease * 0.08;
-          p.alpha = Math.min(p.targetAlpha, p.alpha + 0.03);
+          // Smooth converge toward center using lerp
+          const t = Math.min(1, pElapsed * p.speed * 35);
+          const ease = 1 - Math.pow(1 - t, 4); // ease-out quartic (smoother)
+          const lerpSpeed = 0.04 + ease * 0.06;
+          p.x += (p.targetX - p.x) * lerpSpeed;
+          p.y += (p.targetY - p.y) * lerpSpeed;
+          p.alpha = Math.min(p.targetAlpha, p.alpha + 0.018);
         } else if (phaseRef.current === 1) {
-          // Hold with gentle float
-          p.x += Math.sin(elapsed * 1.5 + p.delay * 10) * 0.3;
-          p.y += Math.cos(elapsed * 1.2 + p.delay * 8) * 0.2;
+          // Hold with gentle organic float
+          p.x += Math.sin(elapsed * 1.2 + p.delay * 10) * 0.4;
+          p.y += Math.cos(elapsed * 0.9 + p.delay * 8) * 0.3;
         } else {
-          // Dissolve outward
+          // Dissolve outward — long distance scatter
           if (p.phase !== 2) {
             p.phase = 2;
-            const angle = Math.atan2(p.y - cy, p.x - cx) + (Math.random() - 0.5) * 1.2;
-            const force = 1.5 + Math.random() * 3;
+            const angle = Math.atan2(p.y - cy, p.x - cx) + (Math.random() - 0.5) * 0.8;
+            const force = 4 + Math.random() * 8; // much stronger launch
             p.vx = Math.cos(angle) * force;
             p.vy = Math.sin(angle) * force;
           }
           p.x += p.vx;
           p.y += p.vy;
-          p.vx *= 0.985;
-          p.vy *= 0.985;
-          p.alpha = Math.max(0, p.alpha - 0.008 - Math.random() * 0.005);
+          p.vx *= 0.994; // slower friction = travel further
+          p.vy *= 0.994;
+          // Smooth alpha fade using exponential decay
+          p.alpha *= 0.988;
+          if (p.alpha < 0.01) p.alpha = 0;
 
-          if (p.alpha > 0.01) allDone = false;
+          if (p.alpha > 0.005) allDone = false;
         }
 
         if (p.alpha <= 0) continue;
@@ -410,7 +413,7 @@ export default function IntroScreen() {
               }
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              Portfolio — 2024
+              Portfolio — 2026
             </motion.p>
 
             {/* Name — character dissolve reveal */}
