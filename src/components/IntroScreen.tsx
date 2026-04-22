@@ -120,30 +120,30 @@ function BokehCanvas({
       const cx = w / 2;
       const cy = h / 2;
 
-      // Phase progression
-      if (phaseRef.current === 0 && elapsed > 1.8) {
+      // Phase progression (fast sequence)
+      if (phaseRef.current === 0 && elapsed > 0.9) {
         phaseRef.current = 1; // hold
       }
-      if (phaseRef.current === 1 && elapsed > 2.8) {
+      if (phaseRef.current === 1 && elapsed > 1.4) {
         phaseRef.current = 2; // dissolve
       }
 
       // Lens flare intensity
-      if (elapsed < 1.0) {
-        lensFlareRef.current = Math.min(1, elapsed / 0.8);
-      } else if (elapsed < 2.8) {
+      if (elapsed < 0.5) {
+        lensFlareRef.current = Math.min(1, elapsed / 0.4);
+      } else if (elapsed < 1.4) {
         lensFlareRef.current = 1;
       } else {
-        lensFlareRef.current = Math.max(0, 1 - (elapsed - 2.8) / 1.2);
+        lensFlareRef.current = Math.max(0, 1 - (elapsed - 1.4) / 0.8);
       }
 
       // Center glow
-      if (elapsed < 0.8) {
-        centerGlowRef.current = elapsed / 0.8;
-      } else if (elapsed < 2.5) {
+      if (elapsed < 0.4) {
+        centerGlowRef.current = elapsed / 0.4;
+      } else if (elapsed < 1.2) {
         centerGlowRef.current = 1;
       } else {
-        centerGlowRef.current = Math.max(0, 1 - (elapsed - 2.5) / 1.0);
+        centerGlowRef.current = Math.max(0, 1 - (elapsed - 1.2) / 0.6);
       }
 
       // ── Draw center glow ──
@@ -190,13 +190,13 @@ function BokehCanvas({
         const pElapsed = Math.max(0, elapsed - p.delay);
 
         if (phaseRef.current === 0) {
-          // Smooth converge toward center using lerp
-          const t = Math.min(1, pElapsed * p.speed * 35);
-          const ease = 1 - Math.pow(1 - t, 4); // ease-out quartic (smoother)
-          const lerpSpeed = 0.04 + ease * 0.06;
+          // Fast converge toward center using lerp
+          const t = Math.min(1, pElapsed * p.speed * 60);
+          const ease = 1 - Math.pow(1 - t, 4);
+          const lerpSpeed = 0.08 + ease * 0.1;
           p.x += (p.targetX - p.x) * lerpSpeed;
           p.y += (p.targetY - p.y) * lerpSpeed;
-          p.alpha = Math.min(p.targetAlpha, p.alpha + 0.018);
+          p.alpha = Math.min(p.targetAlpha, p.alpha + 0.05);
         } else if (phaseRef.current === 1) {
           // Hold with gentle organic float
           p.x += Math.sin(elapsed * 1.2 + p.delay * 10) * 0.4;
@@ -212,10 +212,10 @@ function BokehCanvas({
           }
           p.x += p.vx;
           p.y += p.vy;
-          p.vx *= 0.994; // slower friction = travel further
-          p.vy *= 0.994;
-          // Smooth alpha fade using exponential decay
-          p.alpha *= 0.988;
+          p.vx *= 0.992;
+          p.vy *= 0.992;
+          // Faster smooth alpha fade
+          p.alpha *= 0.975;
           if (p.alpha < 0.01) p.alpha = 0;
 
           if (p.alpha > 0.005) allDone = false;
