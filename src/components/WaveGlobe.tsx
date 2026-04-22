@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { weatherState } from "@/lib/weatherState";
 
 /* ─── Sea Waves — 3D depth, boat, pointer-interactive, page-beat ─── */
 export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }) {
@@ -206,7 +207,15 @@ export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }
     }
     beatDecay.current += (beat.current - beatDecay.current) * 0.12;
 
-    const beatAmp = beatDecay.current * 45;
+    /* ── Weather-reactive amplitude boost ── */
+    const stormAmpMul = 1
+      + (weatherState.isThundering ? 0.6 : 0)
+      + (weatherState.isRaining ? weatherState.rainIntensity * 0.35 : 0)
+      + weatherState.windStrength * 0.2;
+    const flashBoost = weatherState.flashIntensity;
+    const shake = weatherState.cameraShake;
+
+    const beatAmp = beatDecay.current * 45 + (stormAmpMul - 1) * 15;
     const pointerInfluence = (mx - 0.5) * 0.3;
 
     /* ─── Wave colors switch based on day/night ─── */
@@ -475,8 +484,9 @@ export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }
     const boat2Tilt = Math.atan2(b2yR - b2yL, dx * 2) * 0.6;
     drawBoat(ctx, boat2X, boat2Y - 4, boat2Tilt, 1.2, 0.35, time);
 
-    /* ─── Foam / spray particles ─── */
-    const foamCount = 40 + Math.floor(beatDecay.current * 50);
+    /* ─── Foam / spray particles — more during storms ─── */
+    const stormFoamBoost = Math.floor((stormAmpMul - 1) * 30);
+    const foamCount = 40 + Math.floor(beatDecay.current * 50) + stormFoamBoost;
     const frontLayer = layers[layers.length - 1];
     for (let i = 0; i < foamCount; i++) {
       const fx = (i * 137.5 + time * 20) % w;
@@ -485,8 +495,8 @@ export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }
           fx, w, frontLayer.baseY, frontLayer.amp, frontLayer.freq,
           frontLayer.speed, time, pointerInfluence, beatAmp, mx, beatDecay.current
         ) - 1 - Math.random() * 4;
-      const alpha = 0.1 + Math.random() * 0.15 + beatDecay.current * 0.2;
-      const radius = 0.5 + Math.random() * 1.5;
+      const alpha = 0.1 + Math.random() * 0.15 + beatDecay.current * 0.2 + (stormAmpMul - 1) * 0.06;
+      const radius = (0.5 + Math.random() * 1.5) * Math.min(1.3, stormAmpMul * 0.7 + 0.3);
       ctx.beginPath();
       ctx.arc(fx, fy, radius, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,255,255,${alpha})`;
@@ -495,7 +505,7 @@ export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }
 
     // Deeper foam on mid layers for depth
     const midLayer = layers[6];
-    const deepFoamCount = 15;
+    const deepFoamCount = 15 + stormFoamBoost;
     for (let i = 0; i < deepFoamCount; i++) {
       const fx = (i * 211.3 + time * 14) % w;
       const fy =
@@ -509,6 +519,25 @@ export default function WaveGlobe({ mode = "night" }: { mode?: "day" | "night" }
       ctx.arc(fx, fy, radius, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,255,255,${alpha})`;
       ctx.fill();
+    }
+
+    /* ─── Lightning flash reflection on water surface ─── */
+    if (flashBoost > 0.05) {
+      ctx.save();
+      const refGrad = ctx.createLinearGradient(0, h * 0.3, 0, h * 0.6);
+      refGrad.addColorStop(0, `rgba(200,220,255,${flashBoost * 0.12})`);
+      refGrad.addColorStop(0.5, `rgba(180,200,240,${flashBoost * 0.06})`);
+      refGrad.addColorStop(1, `rgba(160,180,220,0)`);
+      ctx.fillStyle = refGrad;
+      ctx.fillRect(0, h * 0.3, w, h * 0.3);
+      ctx.restore();
+    }
+
+    /* ─── Camera shake from thunder ─── */
+    if (shake > 0.02) {
+      ctx.save();
+      ctx.translate((Math.random() - 0.5) * shake * 4, (Math.random() - 0.5) * shake * 3);
+      ctx.restore();
     }
 
     animId.current = requestAnimationFrame(draw);

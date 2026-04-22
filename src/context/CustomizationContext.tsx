@@ -81,8 +81,7 @@ export const THEME_PRESETS: Record<string, ThemeColors> = {
 export interface CustomizationState {
   sidebarOpen: boolean;
   snowEnabled: boolean;
-  rainEnabled: boolean;
-  thunderEnabled: boolean;
+  stormEnabled: boolean;
   starsEnabled: boolean;
   animatedBgEnabled: boolean;
   oceanFishEnabled: boolean;
@@ -97,8 +96,7 @@ interface CustomizationContextType extends CustomizationState {
   toggleSidebar: () => void;
   closeSidebar: () => void;
   setSnowEnabled: (v: boolean) => void;
-  setRainEnabled: (v: boolean) => void;
-  setThunderEnabled: (v: boolean) => void;
+  setStormEnabled: (v: boolean) => void;
   setStarsEnabled: (v: boolean) => void;
   setAnimatedBgEnabled: (v: boolean) => void;
   setOceanFishEnabled: (v: boolean) => void;
@@ -113,8 +111,7 @@ interface CustomizationContextType extends CustomizationState {
 const defaults: CustomizationState = {
   sidebarOpen: false,
   snowEnabled: false,
-  rainEnabled: false,
-  thunderEnabled: false,
+  stormEnabled: false,
   starsEnabled: false,
   animatedBgEnabled: false,
   oceanFishEnabled: false,
@@ -130,8 +127,7 @@ const CustomizationContext = createContext<CustomizationContextType>({
   toggleSidebar: () => {},
   closeSidebar: () => {},
   setSnowEnabled: () => {},
-  setRainEnabled: () => {},
-  setThunderEnabled: () => {},
+  setStormEnabled: () => {},
   setStarsEnabled: () => {},
   setAnimatedBgEnabled: () => {},
   setOceanFishEnabled: () => {},
@@ -154,7 +150,14 @@ function loadFromStorage(): Partial<CustomizationState> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    /* Migrate legacy separate rain/thunder toggles → stormEnabled */
+    if ("rainEnabled" in parsed || "thunderEnabled" in parsed) {
+      parsed.stormEnabled = parsed.rainEnabled || parsed.thunderEnabled || false;
+      delete parsed.rainEnabled;
+      delete parsed.thunderEnabled;
+    }
+    return parsed;
   } catch {
     return {};
   }
@@ -276,12 +279,8 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
     (v: boolean) => setState((s) => ({ ...s, snowEnabled: v })),
     [],
   );
-  const setRainEnabled = useCallback(
-    (v: boolean) => setState((s) => ({ ...s, rainEnabled: v })),
-    [],
-  );
-  const setThunderEnabled = useCallback(
-    (v: boolean) => setState((s) => ({ ...s, thunderEnabled: v })),
+  const setStormEnabled = useCallback(
+    (v: boolean) => setState((s) => ({ ...s, stormEnabled: v })),
     [],
   );
   const setStarsEnabled = useCallback(
@@ -337,8 +336,7 @@ export function CustomizationProvider({ children }: { children: ReactNode }) {
         toggleSidebar,
         closeSidebar,
         setSnowEnabled,
-        setRainEnabled,
-        setThunderEnabled,
+        setStormEnabled,
         setStarsEnabled,
         setAnimatedBgEnabled,
         setOceanFishEnabled,

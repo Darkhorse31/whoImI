@@ -29,18 +29,23 @@ const OceanFishEffect = dynamic(
 const DayParticles = dynamic(() => import("@/components/DayParticles"), {
   ssr: false,
 });
+const WeatherSoundManager = dynamic(
+  () => import("@/components/WeatherSoundManager"),
+  { ssr: false },
+);
 
 export default function ConditionalEffects() {
   const {
     filmGrainEnabled,
     snowEnabled,
-    rainEnabled,
-    thunderEnabled,
+    stormEnabled,
     starsEnabled,
     animatedBgEnabled,
     oceanFishEnabled,
     particlesEnabled,
   } = useCustomization();
+
+  const hasWeatherAudio = stormEnabled || snowEnabled;
 
   return (
     <>
@@ -48,10 +53,11 @@ export default function ConditionalEffects() {
       {starsEnabled && <StarsEffect />}
       {filmGrainEnabled && <FilmGrain />}
       {snowEnabled && <SnowEffect />}
-      {rainEnabled && <RainEffect />}
-      {thunderEnabled && <ThunderEffect />}
+      {stormEnabled && <RainEffect />}
+      {stormEnabled && <ThunderEffect />}
       {oceanFishEnabled && <OceanFishEffect />}
       {particlesEnabled && <DayParticles />}
+      {hasWeatherAudio && <WeatherSoundManager />}
     </>
   );
 }

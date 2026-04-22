@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { updateWeather, weatherState } from "@/lib/weatherState";
 
 interface Flake {
   x: number;
@@ -98,6 +99,8 @@ export default function SnowEffect() {
     let animId: number;
     let lastTime = performance.now();
 
+    updateWeather({ isSnowing: true, snowIntensity: 0.6 });
+
     // Pre-create cached gradients (updated on resize)
     let pileGrad = ctx.createLinearGradient(0, h - 22, 0, h);
     pileGrad.addColorStop(0,    "rgba(228,238,252,0.28)");
@@ -115,16 +118,18 @@ export default function SnowEffect() {
 
       ctx.clearRect(0, 0, w, h);
 
-      /* Wind */
+      /* Wind — enhanced by shared weather wind */
+      const externalWind = weatherState.windStrength * 0.3;
       windTimer -= dt;
       if (windTimer <= 0) {
-        windTarget = (Math.random() - 0.5) * 1.8;
+        windTarget = (Math.random() - 0.5) * 1.8 + externalWind;
         windTimer = 50 + Math.random() * 240;
         if (Math.random() < 0.28) {
           gustStrength = (Math.random() < 0.5 ? 1 : -1) * (0.5 + Math.random() * 1.1);
           gustDecay = 0.014 + Math.random() * 0.022;
         }
       }
+      updateWeather({ snowIntensity: 0.6 + Math.abs(windAngle) * 0.2 });
       windAngle += (windTarget - windAngle) * 0.006 * dt;
       if (Math.abs(gustStrength) > 0.01) {
         windAngle += gustStrength * 0.04 * dt;
@@ -222,6 +227,26 @@ export default function SnowEffect() {
       ctx.fillStyle = coldGrad;
       ctx.fillRect(0, 0, w, h);
 
+      /* Wind-blown snow wisps during strong gusts */
+      if (Math.abs(gustStrength) > 0.3) {
+        ctx.globalAlpha = Math.min(0.035, Math.abs(gustStrength) * 0.02);
+        for (let i = 0; i < 3; i++) {
+          const sy = h * 0.7 + Math.random() * h * 0.25;
+          const sx = Math.random() * w;
+          const streakLen = 30 + Math.random() * 60;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.quadraticCurveTo(
+            sx + Math.sign(gustStrength) * streakLen * 0.5, sy - 3 - Math.random() * 5,
+            sx + Math.sign(gustStrength) * streakLen, sy + Math.random() * 4 - 2
+          );
+          ctx.strokeStyle = "rgba(220,230,245,1)";
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      }
+
       animId = requestAnimationFrame(draw);
     };
 
@@ -252,6 +277,7 @@ export default function SnowEffect() {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", onResize);
+      updateWeather({ isSnowing: false, snowIntensity: 0 });
     };
   }, []);
 

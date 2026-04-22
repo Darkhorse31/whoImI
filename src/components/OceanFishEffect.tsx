@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { weatherState } from "@/lib/weatherState";
 
 /* ══════════════════════════════════════════════════════════════
    Types
@@ -324,13 +325,16 @@ export default function OceanFishEffect() {
     }));
     let waves = mkWaves();
 
+    /** Storm multiplier for wave amplitude (smooth) */
+    let waveStormMul = 1;
+
     /** Combined wave Y at x for frame t (top 3 layers) */
     function surfaceY(x: number, frame: number): number {
       let y = 0;
       for (let i = 0; i < 3; i++) {
         const wv = waves[i];
-        y += Math.sin(x * wv.freq + frame * wv.speed) * wv.amp * 0.5
-           + Math.sin(x * wv.freq2 + frame * wv.speed2 + i) * wv.amp2 * 0.4;
+        y += Math.sin(x * wv.freq + frame * wv.speed) * wv.amp * 0.5 * waveStormMul
+           + Math.sin(x * wv.freq2 + frame * wv.speed2 + i) * wv.amp2 * 0.4 * waveStormMul;
       }
       return waves[0].yOff + y / 3;
     }
@@ -436,6 +440,15 @@ export default function OceanFishEffect() {
       ctx.clearRect(0, 0, w, h);
       t++;
 
+      /* ── Weather-reactive wave intensity ── */
+      const targetStormMul = 1
+        + (weatherState.isThundering ? 0.8 : 0)
+        + (weatherState.isRaining ? weatherState.rainIntensity * 0.5 : 0)
+        + weatherState.windStrength * 0.3;
+      waveStormMul += (targetStormMul - waveStormMul) * 0.005;
+
+      const flashBoost = weatherState.flashIntensity;
+
       /* Fixed realistic ocean colors */
       const aR = C_R, aG = C_G, aB = C_B;  // caustic/light color
       const wR = W_R, wG = W_G, wB = W_B;  // wave color
@@ -492,9 +505,9 @@ export default function OceanFishEffect() {
         ctx.beginPath();
         for (let x = 0; x <= w; x += 3) {
           const y = wv.yOff
-            + Math.sin(x * wv.freq + t * wv.speed) * wv.amp
-            + Math.sin(x * wv.freq2 + t * wv.speed2 + wi * 0.5) * wv.amp2
-            + Math.sin(x * 0.008 + t * 0.003 + wi) * 2; // micro-ripple
+            + Math.sin(x * wv.freq + t * wv.speed) * wv.amp * waveStormMul
+            + Math.sin(x * wv.freq2 + t * wv.speed2 + wi * 0.5) * wv.amp2 * waveStormMul
+            + Math.sin(x * 0.008 + t * 0.003 + wi) * 2 * waveStormMul; // micro-ripple
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
@@ -504,24 +517,39 @@ export default function OceanFishEffect() {
         ctx.fillStyle = `rgba(${wR}, ${wG}, ${wB}, ${wv.alpha})`;
         ctx.fill();
 
-        /* Foam / whitecap on top 2 wave layers */
-        if (wi < 2) {
+        /* Foam / whitecap on top wave layers — more during storms */
+        const foamLayers = waveStormMul > 1.3 ? 4 : 2;
+        if (wi < foamLayers) {
           ctx.save();
-          ctx.globalAlpha = 0.04 - wi * 0.015;
+          const foamAlpha = (0.04 - wi * 0.008) * Math.min(2, waveStormMul);
+          ctx.globalAlpha = foamAlpha;
           for (let x = 0; x < w; x += 6) {
             const y = wv.yOff
-              + Math.sin(x * wv.freq + t * wv.speed) * wv.amp
-              + Math.sin(x * wv.freq2 + t * wv.speed2 + wi * 0.5) * wv.amp2;
-            const slope = Math.cos(x * wv.freq + t * wv.speed) * wv.amp * wv.freq;
-            if (Math.abs(slope) > 0.015) {
+              + Math.sin(x * wv.freq + t * wv.speed) * wv.amp * waveStormMul
+              + Math.sin(x * wv.freq2 + t * wv.speed2 + wi * 0.5) * wv.amp2 * waveStormMul;
+            const slope = Math.cos(x * wv.freq + t * wv.speed) * wv.amp * wv.freq * waveStormMul;
+            const slopeThreshold = 0.015 / waveStormMul;
+            if (Math.abs(slope) > slopeThreshold) {
               ctx.beginPath();
-              ctx.arc(x, y - 1, 1.5 + Math.random() * 1.5, 0, TAU);
+              ctx.arc(x, y - 1, (1.5 + Math.random() * 1.5) * Math.min(1.5, waveStormMul * 0.8), 0, TAU);
               ctx.fillStyle = "rgba(220, 235, 250, 1)";
               ctx.fill();
             }
           }
           ctx.restore();
         }
+      }
+
+      /* ──── Lightning reflection on water surface ──── */
+      if (flashBoost > 0.05) {
+        ctx.save();
+        const refGrad = ctx.createLinearGradient(0, h * SURFACE_Y_RATIO - 20, 0, h * SURFACE_Y_RATIO + 120);
+        refGrad.addColorStop(0, `rgba(200,220,255,${flashBoost * 0.15})`);
+        refGrad.addColorStop(0.3, `rgba(180,200,240,${flashBoost * 0.08})`);
+        refGrad.addColorStop(1, `rgba(160,180,220,0)`);
+        ctx.fillStyle = refGrad;
+        ctx.fillRect(0, h * SURFACE_Y_RATIO - 20, w, 140);
+        ctx.restore();
       }
 
       /* ──── 5. Specular highlights / shimmer ──── */
@@ -545,13 +573,31 @@ export default function OceanFishEffect() {
       for (const f of sortedFish) {
         f.swimTimer++;
 
-        /* Natural speed variation */
-        f.speed = f.baseSpeed + Math.sin(f.swimTimer * 0.003 + f.phase) * f.baseSpeed * 0.25;
+        /* Natural speed variation — faster in storms */
+        const stormSpeedMul = 1 + (weatherState.isThundering ? 0.4 : 0) + weatherState.windStrength * 0.2;
+        f.speed = (f.baseSpeed + Math.sin(f.swimTimer * 0.003 + f.phase) * f.baseSpeed * 0.25) * stormSpeedMul;
 
-        /* Gentle vertical drift */
-        f.driftVy += (Math.random() - 0.5) * 0.005;
-        f.driftVy = clamp(f.driftVy, -0.15, 0.15);
-        f.driftVy *= 0.995; // dampen
+        /* Gentle vertical drift — more erratic in storms */
+        const driftScale = weatherState.isThundering ? 0.012 : 0.005;
+        f.driftVy += (Math.random() - 0.5) * driftScale;
+        f.driftVy = clamp(f.driftVy, -0.15 * stormSpeedMul, 0.15 * stormSpeedMul);
+        f.driftVy *= 0.995;
+
+        /* Swarm/group behavior: fish near each other tend to align direction */
+        for (const other of fishes) {
+          if (other === f) continue;
+          const dx = other.x - f.x;
+          const dy = other.y - f.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 120 && dist > 0) {
+            // Alignment: match direction of nearby fish
+            if (other.dir !== f.dir && Math.random() < 0.002) {
+              f.dir = other.dir;
+            }
+            // Cohesion: drift towards nearby fish (very subtle)
+            f.driftVy += dy * 0.00003;
+          }
+        }
 
         /* Occasional direction change */
         f.turnTimer--;
